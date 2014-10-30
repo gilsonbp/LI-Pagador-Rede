@@ -50,7 +50,7 @@ class TesteMontaXml(mox.MoxTestBase):
             transaction=Transaction(
                 card_txn=CardTxn(
                     card=Card(
-                        cv2_avs=Cv2Avs(cv2="codigo"),
+                        cv2_avs=ValorComAtributos(Cv2Avs(cv2="codigo"), {"teste": "ha", "de_novo": 3}),
                         pan="1234",
                         expirydate="Data",
                         card_account_type="credit"
@@ -69,4 +69,4 @@ class TesteMontaXml(mox.MoxTestBase):
                 )
             )
         )
-        request.to_xml(top=True).should.be.equal('<Request version="2"><Authentication><AcquirerCode><rdcd_pv>123456789</rdcd_pv></AcquirerCode><password>123456</password></Authentication><Transaction><CardTxn><Card><card_account_type>credit</card_account_type><Cv2Avs><cv2>codigo</cv2></Cv2Avs><expirydate>Data</expirydate><pan>1234</pan></Card><method>auth</method></CardTxn><TxnDetails><amount currency="BRL">23.45</amount><capturemethod>ecomm</capturemethod><dba>dba-value</dba><Instalments><instalment_number>5</instalment_number><instalment_type>zero_interest</instalment_type></Instalments><merchantreference>123445</merchantreference></TxnDetails></Transaction></Request>')
+        request.to_xml(top=True).should.be.equal('<Request version="2"><Authentication><AcquirerCode><rdcd_pv>123456789</rdcd_pv></AcquirerCode><password>123456</password></Authentication><Transaction><CardTxn><Card><card_account_type>credit</card_account_type><Cv2Avs teste="ha" de_novo="3"><cv2>codigo</cv2></Cv2Avs><expirydate>Data</expirydate><pan>1234</pan></Card><method>auth</method></CardTxn><TxnDetails><amount currency="BRL">23.45</amount><capturemethod>ecomm</capturemethod><dba>dba-value</dba><Instalments><instalment_number>5</instalment_number><instalment_type>zero_interest</instalment_type></Instalments><merchantreference>123445</merchantreference></TxnDetails></Transaction></Request>')
