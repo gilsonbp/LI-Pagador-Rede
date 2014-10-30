@@ -25,6 +25,7 @@ class TipoDeParcelamento(object):
 
 
 class Request(EntidadeSerializavel):
+    parametros = {"version": "2"}
     atributos = [Atributo("Authentication", eh_serializavel=True), Atributo("Transaction", eh_serializavel=True)]
 
 
