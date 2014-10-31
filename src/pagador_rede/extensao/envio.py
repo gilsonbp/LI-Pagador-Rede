@@ -38,7 +38,7 @@ class AcquirerCode(EntidadeSerializavel):
 
 
 class Transaction(EntidadeSerializavel):
-    _atributos = ["CardTxn", "TxnDetails"]
+    _atributos = ["CardTxn", "TxnDetails", "HistoricTxn"]
     atributos = [
         Atributo(atributo, eh_serializavel=True)
         for atributo in _atributos
@@ -47,6 +47,14 @@ class Transaction(EntidadeSerializavel):
 
 class CardTxn(EntidadeSerializavel):
     _atributos = ["Card", "method"]
+    atributos = [
+        Atributo(atributo, eh_serializavel=(atributo == "Card"))
+        for atributo in _atributos
+    ]
+
+
+class HistoricTxn(EntidadeSerializavel):
+    _atributos = ["Card", "reference", "method", "authcode"]
     atributos = [
         Atributo(atributo, eh_serializavel=(atributo == "Card"))
         for atributo in _atributos
@@ -74,7 +82,7 @@ class TxnDetails(EntidadeSerializavel):
 
 
 class Instalments(EntidadeSerializavel):
-    _atributos = ["instalment_type", "instalment_number"]
+    _atributos = ["type", "number"]
     atributos = [
         Atributo(atributo)
         for atributo in _atributos
