@@ -1,0 +1,2 @@
+include *.md
+recursive-include src/pagador_rede/extensao/templates *
