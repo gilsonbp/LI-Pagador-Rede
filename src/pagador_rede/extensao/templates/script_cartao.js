@@ -50,6 +50,9 @@ $(function() {
     }
     zeraValidacao();
     $("#cartao_numero").mask("9999 9999 9999 9999");
-    $("#cartao_data_expiracao").mask("99/99", {placeholder: "mm/aa"});
+    $("#cartao_data_expiracao").mask("99/99");
     $("#cartao_cvv").mask("999");
+    if ($("#radio-rede").is(":checked")) {
+        $("#escolha-rede").addClass("in");
+    }
 });

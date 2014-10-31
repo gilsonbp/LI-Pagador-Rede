@@ -1,8 +1,8 @@
 {% load filters %}
 {% if modo == 'padrao-novo' %}
-    <li class="pagamento lista-item" id="pagamento_1" data-id="1" data-nome="Cartão de Crédido">
+    <li class="pagamento lista-item" id="pagamento_1" data-id="11" data-nome="Cartão de Crédido">
         <div class="radio_button">
-            <input class="forma_pagamento" type="radio" value="1" name="forma_pagamento" {% if forma_pagamento == pagamento.id|stringformat:"s" %}checked="checked"{% endif %} />
+            <input class="forma_pagamento" type="radio" value="11" name="forma_pagamento" {% if forma_pagamento == pagamento.id|stringformat:"s" %}checked="checked"{% endif %} />
         </div>
         <div class="pagamento_imagem">
             <img src="{{ STATIC_URL }}img/formas-de-pagamento/checkout-rede-logo.png" title="Pague com Cartão de Crédido" alt="Pague com Cartão de Crédido" />
@@ -12,7 +12,7 @@
     <div class="accordion-group rede">
         <label for="{% if modo == 'modal' %}modal-{% endif %}radio-rede" class="accordion-heading{% if modo == 'modal' %} forma-pagamento-modal{% endif %}" data-toggle="collapse" data-target="#{% if modo == 'modal' %}modal-{% endif %}escolha-rede" data-parent="#{% if modo == 'modal' %}modalFormasPagamento{% else %}formasPagamento{% endif %}" id="{% if modo == 'modal' %}modal{% endif %}pagamento1">
             <span class="radio-conteiner">
-                <input type="radio" name="forma_pagamento" id="{% if modo == 'modal' %}modal-{% endif %}radio-rede" {% if forma_pagamento == pagamento.id|stringformat:"s" %}checked="checked"{% endif %} value="1">
+                <input type="radio" name="forma_pagamento" id="{% if modo == 'modal' %}modal-{% endif %}radio-rede" {% if forma_pagamento == pagamento.id|stringformat:"s" %}checked="checked"{% endif %} value="11">
             </span>
             <span class="forma-conteiner text-right">
                 <img src="{{ STATIC_URL }}novo-template/img/bandeiras/rede.png" title="Pague com Cartão de Crédido" alt="Pague com Cartão de Crédido" />

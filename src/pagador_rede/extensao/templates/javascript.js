@@ -3,36 +3,34 @@ var url = '';
 var $counter = null;
 var segundos = 5;
 $(function() {
-    var $pagSeguroMensagem = $(".pagseguro-mensagem");
+    var $redeMensagem = $(".rede-mensagem");
 
     function iniciaContador() {
-        $counter = $pagSeguroMensagem.find(".segundos");
+        $counter = $redeMensagem.find(".segundos");
         setInterval('if (segundos > 0) { $counter.text(--segundos); }', 1000);
     }
 
     function enviaPagamento() {
-        $pagSeguroMensagem.find(".msg-danger").hide();
-        $pagSeguroMensagem.find(".msg-success").hide();
-        $pagSeguroMensagem.find(".msg-warning").show();
-        $pagSeguroMensagem.removeClass("alert-message-success");
-        $pagSeguroMensagem.removeClass("alert-message-danger");
-        $pagSeguroMensagem.addClass("alert-message-warning");
-        var url_pagar = '{% url_loja "checkout_pagador" pedido.numero pagamento.id %}?next_url=' + window.location.href.split("?")[0];
+        $redeMensagem.find(".msg-danger").hide();
+        $redeMensagem.find(".msg-success").hide();
+        $redeMensagem.find(".msg-warning").show();
+        $redeMensagem.removeClass("alert-message-success");
+        $redeMensagem.removeClass("alert-message-danger");
+        $redeMensagem.addClass("alert-message-warning");
+        var url_pagar = '{% url_loja "checkout_pagador" pedido.numero pagamento.id %}?passo=fulfill';
         $.getJSON(url_pagar)
             .fail(function (data) {
                 exibeMensagemErro(data.status, data.content);
             })
             .done(function (data) {
+                console.log(data);
                 if (data.sucesso) {
                     $("#aguarde").hide();
-                    $("#redirecting").show();
-                    url = data.content.url;
-                    iniciaContador();
-                    setTimeout('window.location = url;', 5000);
+                    exibeMensagemSucesso("pago");
                 }
                 else {
                     if (data.status == 400 || data.status == 401) {
-                        exibeMensagemErro(data.status, "Ocorreu um erro ao enviar os dados para o PagSeguro. Por favor, tente de novo");
+                        exibeMensagemErro(data.status, "Ocorreu um erro ao enviar os dados para o Rede. Por favor, tente de novo");
                     }
                     else if (data.status == 404) {
                         var fatal = false;
@@ -62,11 +60,11 @@ $(function() {
     });
 
     function exibeMensagemErro(status, mensagem, fatal) {
-        $pagSeguroMensagem.find(".msg-warning").hide();
-        $pagSeguroMensagem.toggleClass("alert-message-warning alert-message-danger");
+        $redeMensagem.find(".msg-warning").hide();
+        $redeMensagem.toggleClass("alert-message-warning alert-message-danger");
         var $errorMessage = $("#errorMessage");
         $errorMessage.text(status + ": " + mensagem);
-        $pagSeguroMensagem.find(".msg-danger").show();
+        $redeMensagem.find(".msg-danger").show();
         if (fatal) {
             $(".pagar").remove();
             $(".click").remove();
@@ -74,9 +72,9 @@ $(function() {
     }
 
     function exibeMensagemSucesso(situacao) {
-        $pagSeguroMensagem.find(".msg-warning").hide();
-        $pagSeguroMensagem.toggleClass("alert-message-warning alert-message-success");
-        var $success = $pagSeguroMensagem.find(".msg-success");
+        $redeMensagem.find(".msg-warning").hide();
+        $redeMensagem.toggleClass("alert-message-warning alert-message-success");
+        var $success = $redeMensagem.find(".msg-success");
         $success.find("#redirecting").hide();
         if (situacao == "pago") {
             $success.find("#successMessage").show();
@@ -91,7 +89,7 @@ $(function() {
     var pedidoAguardandoPagamento = '{{ pedido.situacao_id }}' == '2';
 
     if (window.location.search != "" && window.location.search.indexOf("failure") > -1) {
-        exibeMensagemErro(500, "Pagamento cancelado no PagSeguro!");
+        exibeMensagemErro(500, "Pagamento cancelado no Rede!");
     }
     else if (window.location.search != "" && window.location.search.indexOf("success") > -1 || pedidoPago) {
         exibeMensagemSucesso("pago");

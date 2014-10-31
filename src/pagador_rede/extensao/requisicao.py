@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from pagador import settings
 from pagador.acesso.externo import FormatoDeEnvio
+from pagador.envio.models import SituacaoPedido
 from pagador.envio.requisicao import Enviar
 from pagador.envio.serializacao import ValorComAtributos
 from pagador_rede.extensao.envio import (Request, Authentication, AcquirerCode, Transaction, CardTxn, Card, Cv2Avs, TxnDetails, Instalments,
@@ -36,6 +37,13 @@ class EnviarPedido(Enviar):
         self.passo_atual = PassosDeEnvio.pre
         self.headers = {'Content-Type': 'application/xml'}
 
+    def obter_situacao_do_pedido(self, status_requisicao):
+        if self.passo_atual == PassosDeEnvio.pre and status_requisicao == 200:
+            return SituacaoPedido.SITUACAO_PEDIDO_EFETUADO
+        if self.passo_atual == PassosDeEnvio.fulfill and status_requisicao == 200:
+            return SituacaoPedido.SITUACAO_PEDIDO_PAGO
+        return None
+
     @property
     def url(self):
         if self.sandbox:
@@ -50,7 +58,12 @@ class EnviarPedido(Enviar):
     def request(self):
         transaction = None
         if self.passo_atual == PassosDeEnvio.pre:
-            card = Card(cv2_avs=Cv2Avs(cv2=self.dados["cartao_cvv"]), pan=self.dados["cartao_numero"], expirydate=self.dados["cartao_data_expiracao"], card_account_type=TipoDeCartao.credito)
+            card = Card(
+                cv2_avs=Cv2Avs(cv2=self.dados["cartao_cvv"]),
+                pan=self.dados["cartao_numero"].replace(" ", ""),
+                expirydate=self.dados["cartao_data_expiracao"],
+                card_account_type=TipoDeCartao.credito
+            )
             card_txn = CardTxn(card=card, method=self.passo_atual)
             txn_details = TxnDetails(
                 dba=self.configuracao_pagamento.usuario,
@@ -58,7 +71,7 @@ class EnviarPedido(Enviar):
                 capturemethod=MetodoDeCaptura.ecomm,
                 amount=ValorComAtributos(self.formatador.formata_decimal(self.pedido.valor_total), {"currency": "BRL"})
             )
-            if self.dados["parcelamento_tipo"]:
+            if self.dados.get("parcelamento_tipo"):
                 instalments = Instalments(type=self.dados["parcelamento_tipo"], number=self.dados["parcelamento_numero"])
                 txn_details.define_valor_de_atributo("instalments", {"instalments": instalments})
             transaction = Transaction(card_txn=card_txn, txn_details=txn_details)
@@ -92,5 +105,9 @@ class EnviarPedido(Enviar):
     def processar_resposta(self, resposta):
         retorno = self.formatador.xml_para_dict(resposta.content)
         self.dados.update(retorno)
-        return {"content": retorno, "status": resposta.status_code, "reenviar": False}
+        if resposta.status_code != 200:
+            return {"content": retorno, "status": resposta.status_code, "reenviar": False}
+        sucesso = retorno["Response"]["status"] == StatusDeRetorno.sucesso
+        retorno["sucesso"] = sucesso
+        return {"content": retorno, "status": (200 if sucesso else 500), "reenviar": False}
 
