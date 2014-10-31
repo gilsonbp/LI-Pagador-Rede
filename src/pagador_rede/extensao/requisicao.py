@@ -50,45 +50,47 @@ class EnviarPedido(Enviar):
     def request(self):
         transaction = None
         if self.passo_atual == PassosDeEnvio.pre:
-            card = Card(cv2_avs=Cv2Avs(cv2=self.dados["cartao"]["cvv"]), pan=self.dados["cartao"]["numero"], expirydate=self.dados["cartao"]["data_expiracao"], card_account_type=TipoDeCartao.credito)
+            card = Card(cv2_avs=Cv2Avs(cv2=self.dados["cartao_cvv"]), pan=self.dados["cartao_numero"], expirydate=self.dados["cartao_data_expiracao"], card_account_type=TipoDeCartao.credito)
             card_txn = CardTxn(card=card, method=self.passo_atual)
             txn_details = TxnDetails(
-                dba="Nome da Loja",
+                dba=self.configuracao_pagamento.usuario,
                 merchantreference=self.pedido.numero,
                 capturemethod=MetodoDeCaptura.ecomm,
                 amount=ValorComAtributos(self.formatador.formata_decimal(self.pedido.valor_total), {"currency": "BRL"})
             )
-            if self.dados["parcelamento"]:
-                instalments = Instalments(type=self.dados["parcelamento"]["tipo"], number=self.dados["parcelamento"]["numero"])
+            if self.dados["parcelamento_tipo"]:
+                instalments = Instalments(type=self.dados["parcelamento_tipo"], number=self.dados["parcelamento_numero"])
                 txn_details.define_valor_de_atributo("instalments", {"instalments": instalments})
             transaction = Transaction(card_txn=card_txn, txn_details=txn_details)
         if self.passo_atual == PassosDeEnvio.fulfill:
+            pedido_pagamento = self.pedido.pedido_pagamentos.get(pagamento=self.pedido.pagamento)
             txn_details = TxnDetails(amount=ValorComAtributos(self.formatador.formata_decimal(self.pedido.valor_total), {"currency": "BRL"}))
-            historic_txn = HistoricTxn(reference=self.dados["Response"]["gateway_reference"], authcode=self.dados["Response"]["CardTxn"]["authcode"], method=self.passo_atual)
+            historic_txn = HistoricTxn(reference=pedido_pagamento.transacao_id, authcode=pedido_pagamento.identificador_id, method=self.passo_atual)
             transaction = Transaction(historic_txn=historic_txn, txn_details=txn_details)
 
         request = Request(
             authentication=Authentication(
-                acquirer_code=AcquirerCode(rdcd_pv="012341088"),
-                password="y2pCExVHSZ66"
+                acquirer_code=AcquirerCode(rdcd_pv=self.configuracao_pagamento.token),
+                password=self.configuracao_pagamento.senha
             ),
             transaction=transaction
         )
         return request
 
     def gerar_dados_de_envio(self, passo=None):
-        if not passo:
-            passo = PassosDeEnvio.pre
-        self.passo_atual = passo
+        self.passo_atual = self.dados["passo"]
         return self.request.to_xml(top=True)
+
+    @property
+    def valores_de_pagamento(self):
+        return {
+            "transacao_id": self.dados["Response"]["gateway_reference"],
+            "identificador_id": self.dados["Response"]["CardTxn"]["authcode"],
+            "valor_pago": self.pedido.valor_total,
+        }
 
     def processar_resposta(self, resposta):
         retorno = self.formatador.xml_para_dict(resposta.content)
-        if resposta.status_code in (201, 200):
-            if self.passo_atual == PassosDeEnvio.pre:
-                self.dados.update(retorno)
-                return {"passo": PassosDeEnvio.fulfill, "reenviar": False}
-            if self.passo_atual == PassosDeEnvio.fulfill:
-                return {"content": retorno, "status": resposta.status_code, "reenviar": False, "identificador": retorno["Response"]["gateway_reference"]}
+        self.dados.update(retorno)
         return {"content": retorno, "status": resposta.status_code, "reenviar": False}
 

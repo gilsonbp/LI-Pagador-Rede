@@ -4,6 +4,7 @@ from pagador.acesso import externo
 from pagador.configuracao.models import FormaDePagamento, FormaDePagamentoConfiguracao
 from pagador.envio.requisicao import EnviarPedido
 from pagador_rede.extensao.envio import TipoDeParcelamento
+from pagador_rede.extensao.requisicao import PassosDeEnvio
 
 
 class ResponseOk(object):
@@ -81,12 +82,13 @@ class TesteMontaXml(mox.MoxTestBase):
         self.meio_pagamento = FormaDePagamento.objects.get(codigo='rede')
         self.configuracao = FormaDePagamentoConfiguracao.objects.get(forma_pagamento_id=self.meio_pagamento, conta_id=self.conta_id)
         self.dados = {
-            "parcelamento": {"tipo": TipoDeParcelamento.sem_juros, "numero": 5},
-            "cartao": {"cvv": 123, "numero": "1234567890123456", "data_expiracao": "08/22"}
+            "parcelamento_tipo": TipoDeParcelamento.sem_juros, "parcelamento_numero": 5,
+            "cartao_cvv": 123, "cartao_numero": "1234567890123456", "cartao_data_expiracao": "08/22"
         }
         self.pedido = 593
 
-    def test_envio_sucesso(self):
+    def test_envio_pre_sucesso(self):
+        self.dados["passo"] = PassosDeEnvio.pre
         enviar_pedido = EnviarPedido(self.pedido, self.dados, self.conta_id, self.configuracao)
         self.mox.StubOutWithMock(externo, "requests")
         externo.requests.post(
@@ -94,6 +96,14 @@ class TesteMontaXml(mox.MoxTestBase):
             data='<Request version="2"><Authentication><AcquirerCode><rdcd_pv>012341088</rdcd_pv></AcquirerCode><password>y2pCExVHSZ66</password></Authentication><Transaction><CardTxn><Card><card_account_type>credit</card_account_type><Cv2Avs><cv2>123</cv2></Cv2Avs><expirydate>08/22</expirydate><pan>1234567890123456</pan></Card><method>pre</method></CardTxn><TxnDetails><amount currency="BRL">464.00</amount><capturemethod>ecomm</capturemethod><dba>Nome da Loja</dba><instalments><number>5</number><type>zero_interest</type></instalments><merchantreference>593</merchantreference></TxnDetails></Transaction></Request>',
             headers=enviar_pedido.requisicao.headers
         ).AndReturn(ResponseOk())
+        self.mox.ReplayAll()
+        resultado = enviar_pedido.enviar()
+        resultado.should.be.equal({'content': {'Response': {'CardTxn': {'authcode': '100000', 'card_scheme': 'VISA', 'country': 'United Kingdom'}, 'acquirer': 'Rede', 'auth_host_reference': '3', 'extended_response_message': 'Sucesso', 'extended_status': '00', 'gateway_reference': '4600903000000002', 'merchantreference': '123403', 'mid': '456732145', 'mode': 'TEST', 'reason': 'ACCEPTED', 'status': '1', 'time': '1372847996'}}, 'reenviar': False, 'status': 200})
+
+    def test_envio_fulfill_sucesso(self):
+        self.dados["passo"] = PassosDeEnvio.fulfill
+        enviar_pedido = EnviarPedido(self.pedido, self.dados, self.conta_id, self.configuracao)
+        self.mox.StubOutWithMock(externo, "requests")
         externo.requests.post(
             enviar_pedido.requisicao.url,
             data='<Request version="2"><Authentication><AcquirerCode><rdcd_pv>012341088</rdcd_pv></AcquirerCode><password>y2pCExVHSZ66</password></Authentication><Transaction><HistoricTxn><authcode>100000</authcode><method>fulfill</method><reference>4600903000000002</reference></HistoricTxn><TxnDetails><amount currency="BRL">464.00</amount></TxnDetails></Transaction></Request>',
@@ -101,9 +111,10 @@ class TesteMontaXml(mox.MoxTestBase):
         ).AndReturn(ResponseOk())
         self.mox.ReplayAll()
         resultado = enviar_pedido.enviar()
-        resultado.should.be.equal({'content': {'Response': {'CardTxn': {'authcode': '100000', 'card_scheme': 'VISA', 'country': 'United Kingdom'}, 'acquirer': 'Rede', 'auth_host_reference': '3', 'extended_response_message': 'Sucesso', 'extended_status': '00', 'gateway_reference': '4600903000000002', 'merchantreference': '123403', 'mid': '456732145', 'mode': 'TEST', 'reason': 'ACCEPTED', 'status': '1', 'time': '1372847996'}}, 'identificador': '4600903000000002', 'reenviar': False, 'status': 200})
+        resultado.should.be.equal({'content': {'Response': {'CardTxn': {'authcode': '100000', 'card_scheme': 'VISA', 'country': 'United Kingdom'}, 'acquirer': 'Rede', 'auth_host_reference': '3', 'extended_response_message': 'Sucesso', 'extended_status': '00', 'gateway_reference': '4600903000000002', 'merchantreference': '123403', 'mid': '456732145', 'mode': 'TEST', 'reason': 'ACCEPTED', 'status': '1', 'time': '1372847996'}}, 'reenviar': False, 'status': 200})
 
     def test_envio_falha(self):
+        self.dados["passo"] = PassosDeEnvio.pre
         enviar_pedido = EnviarPedido(self.pedido, self.dados, self.conta_id, self.configuracao)
         self.mox.StubOutWithMock(externo, "requests")
         externo.requests.post(

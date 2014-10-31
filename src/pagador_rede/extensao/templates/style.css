@@ -1,0 +1,24 @@
+.spinner {margin: 25px auto 0;width: 150px;text-align: center;}
+.spinner > div {width: 30px;height: 30px;background-color: #67CF22;border-radius: 100%;display: inline-block;-webkit-animation: bouncedelay 1.4s infinite ease-in-out;animation: bouncedelay 1.4s infinite ease-in-out;-webkit-animation-fill-mode: both;animation-fill-mode: both;}
+.spinner .bounce1 {-webkit-animation-delay: -0.32s;animation-delay: -0.32s;}
+.spinner .bounce2 {-webkit-animation-delay: -0.16s;animation-delay: -0.16s;}
+@-webkit-keyframes bouncedelay {0%, 80%, 100% {-webkit-transform: scale(0.0)} 40% {-webkit-transform: scale(1.0)}}
+@keyframes bouncedelay {0%, 80%, 100% {transform: scale(0.0);-webkit-transform: scale(0.0);} 40% {transform: scale(1.0);-webkit-transform: scale(1.0);}}
+.alert-message {margin: 20px 0;padding: 20px;border-left: 3px solid #eee;}
+.alert-message h3 {padding-top: 0;margin-bottom: 5px;}
+.alert-message p:last-child {margin-bottom: 0;}
+.alert-message code {background-color: #fff;border-radius: 3px;}
+.alert-message-success {background-color: #F4FDF0;border-color: #3C763D;}
+.alert-message-success h3 {color: #3C763D;}
+.alert-message-danger {background-color: #fdf7f7;border-color: #d9534f;}
+.alert-message-danger h3 {color: #d9534f;}
+.alert-message-warning {background-color: #fcf8f2;border-color: #f0ad4e;}
+.alert-message-warning h3 {color: #f0ad4e;}
+.alert-message-info {background-color: #f4f8fa;border-color: #5bc0de;}
+.alert-message-info h3 {color: #5bc0de;}
+.alert-message-default {background-color: #EEE;border-color: #B4B4B4;}
+.alert-message-default h3 {color: #000;}
+.alert-message-notice {background-color: #FCFCDD;border-color: #BDBD89;}
+.alert-message-notice h3 {color: #444;}
+.msg-success, .msg-danger {display: none;}
+.href-mercadopago {text-decoration: underline;}

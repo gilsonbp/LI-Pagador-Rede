@@ -1,0 +1,59 @@
+
+<div class="pagseguro-mensagem alert-message alert-message-warning">
+    <div class="msg-warning">
+        <p><img src="{{ STATIC_URL }}img/formas-de-pagamento/pagseguro-logo-200x41.png"></p>
+        <div class="content">
+            <div id="redirecting" style="display: none;">
+                <h3>REDIRECIONANDO</h3>
+                <p class="lead">
+                    Você será redicionado para o PagSeguro em <span class="segundos" style="margin: 0; font-weight: bold;">5</span> segundos ou se preferir, <a href="#" class="ir-mp cor-secundaria">clique aqui</a>.
+                </p>
+                <div class="spinner">
+                    <div class="bounce1"></div>
+                    <div class="bounce2"></div>
+                    <div class="bounce3"></div>
+                </div>
+            </div>
+            <div id="aguarde">
+                <h3>POR FAVOR AGUARDE, ANALISANDO DADOS</h3>
+                <div class="spinner">
+                    <div class="bounce1"></div>
+                    <div class="bounce2"></div>
+                    <div class="bounce3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="msg-success">
+        <p><img src="{{ STATIC_URL }}img/formas-de-pagamento/pagseguro-logo-200x41.png"></p>
+        <div class="content">
+            <div id="successMessage" style="display: none;">
+                <h3>SUCESSO</h3>
+                <p class="lead">
+                    Seu pagamento foi aprovado com sucesso! Obrigado por comprar em nossa loja.
+                </p>
+            </div>
+            <div id="pendingMessage" style="display: none;">
+                <h3>EM ANÁLISE</h3>
+                <p class="lead">
+                    O PagSeguro está analisando seu pedido ou aguardando que o mesmo seja pago. Você será informado sempre através do seu email.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="msg-danger">
+        <p><img src="{{ STATIC_URL }}img/formas-de-pagamento/pagseguro-logo-200x41.png"></p>
+        <div class="content">
+            <h3>PAGAMENTO NÃO EFETUADO</h3>
+            <p class="lead">
+                Seu pagamento não foi concluído. <span class="click">Para tentar novamente clique no botão abaixo:</span>
+            </p>
+            <p class="lead">
+                <button type="button" class="botao principal pagar">Efetuar pagamento</button>
+            </p>
+            <p>
+                <code id="errorMessage">500: NAO FOI POSSIVEL PROCESSAR POR FALTA DE CRÉDITO</code>
+            </p>
+        </div>
+    </div>
+</div>

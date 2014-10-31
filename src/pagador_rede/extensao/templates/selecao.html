@@ -1,0 +1,60 @@
+{% load filters %}
+{% if modo == 'padrao-novo' %}
+    <li class="pagamento lista-item" id="pagamento_1" data-id="1" data-nome="Cartão de Crédido">
+        <div class="radio_button">
+            <input class="forma_pagamento" type="radio" value="1" name="forma_pagamento" {% if forma_pagamento == pagamento.id|stringformat:"s" %}checked="checked"{% endif %} />
+        </div>
+        <div class="pagamento_imagem">
+            <img src="{{ STATIC_URL }}img/formas-de-pagamento/checkout-rede-logo.png" title="Pague com Cartão de Crédido" alt="Pague com Cartão de Crédido" />
+        </div>
+    </li>
+{% else %}
+    <div class="accordion-group rede">
+        <label for="{% if modo == 'modal' %}modal-{% endif %}radio-rede" class="accordion-heading{% if modo == 'modal' %} forma-pagamento-modal{% endif %}" data-toggle="collapse" data-target="#{% if modo == 'modal' %}modal-{% endif %}escolha-rede" data-parent="#{% if modo == 'modal' %}modalFormasPagamento{% else %}formasPagamento{% endif %}" id="{% if modo == 'modal' %}modal{% endif %}pagamento1">
+            <span class="radio-conteiner">
+                <input type="radio" name="forma_pagamento" id="{% if modo == 'modal' %}modal-{% endif %}radio-rede" {% if forma_pagamento == pagamento.id|stringformat:"s" %}checked="checked"{% endif %} value="1">
+            </span>
+            <span class="forma-conteiner text-right">
+                <img src="{{ STATIC_URL }}novo-template/img/bandeiras/rede.png" title="Pague com Cartão de Crédido" alt="Pague com Cartão de Crédido" />
+            </span>
+        </label>
+        <div id="{% if modo == 'modal' %}modal-{% endif %}escolha-rede" class="collapse">
+            <div class="accordion-inner">
+                <ul class="bandeiras-pagamento">
+                    <li><i class="icone-pagamento visa" title="Visa"></i></li>
+                    <li><i class="icone-pagamento mastercard" title="Mastercard"></i></li>
+                </ul>
+                <div class="control-group">
+                    <div class="controls">
+                        <input type="text" id="cartao_nome" name="cartao_nome" placeholder="nome do titular"/>
+                        <span class="help-block">este campo é obrigatório</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <input type="text" id="cartao_numero" name="cartao_numero" placeholder="número do cartão"/>
+                        <span class="help-block">este campo é obrigatório</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <input type="text" id="cartao_data_expiracao" name="cartao_data_expiracao" placeholder="data de expiração"/>
+                        <span class="help-block">este campo é obrigatório</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <input type="text" id="cartao_cvv" name="cartao_cvv" placeholder="código de segurança"/>
+                        <span class="help-block">este campo é obrigatório</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span>Valor</span>
+                    <h5 class="titulo cor-principal text-right pagamento-valor preco-carrinho-total">
+                        R$ {{ carrinho_subtotal|formatar_decimal_br }}
+                    </h5>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
