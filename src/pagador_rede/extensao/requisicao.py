@@ -5,7 +5,7 @@ from pagador.envio.models import SituacaoPedido
 from pagador.envio.requisicao import Enviar
 from pagador.envio.serializacao import ValorComAtributos
 from pagador_rede.extensao.envio import (Request, Authentication, AcquirerCode, Transaction, CardTxn, Card, Cv2Avs, TxnDetails, Instalments,
-                                         TipoDeCartao, MetodoDeCaptura, HistoricTxn)
+                                         TipoDeCartao, MetodoDeCaptura, HistoricTxn, Risk, Action, MerchantConfiguration, CallbackConfiguration, CustomerDetails, RiskDetails, PersonalDetails, AddressDetails, PaymentDetails, OrderDetails, BillingDetails, LineItems, Item)
 
 
 class PassosDeEnvio(object):
@@ -25,6 +25,35 @@ class StatusDeRetorno(object):
     data_expiracao_invalida = "23"
     cartao_expirado = "24"
     numero_cartao_invalido = "25"
+
+
+class ChannelValues(object):
+    web = "W"
+
+
+class CallbackFormat(object):
+    http = "HTTP"
+    xml = "XML"
+    soap = "SOAP"
+
+
+class CallbackOptions(object):
+    imediato = "00"
+    cliente = "01"
+    padrao = "02"
+    ambos = "03"
+    monitorado = "04"
+
+
+class MeiosDePagamento(object):
+    credito = "CC"
+    debito = "DB"
+
+
+class TipoEndereco(object):
+    cliente = 1
+    entrega = 2
+    pagamento = 3
 
 
 class EnviarPedido(Enviar):
@@ -71,6 +100,8 @@ class EnviarPedido(Enviar):
                 capturemethod=MetodoDeCaptura.ecomm,
                 amount=ValorComAtributos(self.formatador.formata_decimal(self.pedido.valor_total), {"currency": "BRL"})
             )
+            if self.configuracao_pagamento.usar_antifraude:
+                txn_details.define_valor_de_atributo("risk", {"risk": self.anti_fraude})
             if self.dados.get("parcelamento_tipo"):
                 instalments = Instalments(type=self.dados["parcelamento_tipo"], number=self.dados["parcelamento_numero"])
                 txn_details.define_valor_de_atributo("instalments", {"instalments": instalments})
@@ -89,6 +120,96 @@ class EnviarPedido(Enviar):
             transaction=transaction
         )
         return request
+
+    def endereco(self, tipo=TipoEndereco.cliente):
+        if tipo == TipoEndereco.pagamento:
+            return "{}, {}, {}".format(
+                self.formatador.trata_unicode_com_limite(self.pedido.cliente.endereco.endereco, limite=30),
+                self.pedido.cliente.endereco.numero,
+                self.formatador.trata_unicode_com_limite(self.pedido.cliente.endereco.bairro, limite=20)
+            )
+        if tipo == TipoEndereco.entrega:
+            return "{}, {}, {}".format(
+                self.formatador.trata_unicode_com_limite(self.pedido.endereco_entrega.endereco, limite=30),
+                self.pedido.endereco_entrega.numero,
+                self.formatador.trata_unicode_com_limite(self.pedido.endereco_entrega.bairro, limite=20)
+            )
+        if tipo == TipoEndereco.pagamento:
+            return "{}, {}, {}".format(
+                self.formatador.trata_unicode_com_limite(self.pedido.endereco_pagamento.endereco, limite=30),
+                self.pedido.endereco_pagamento.numero,
+                self.formatador.trata_unicode_com_limite(self.pedido.endereco_pagamento.bairro, limite=20)
+            )
+        return ""
+
+    @property
+    def anti_fraude(self):
+        risco = Risk(
+            action=Action(
+                merchant_configuration=MerchantConfiguration(
+                    channel=ChannelValues.web,
+                    merchant_location="Loja Integrada",
+                    callback_configuration=CallbackConfiguration(
+                        callback_format=CallbackFormat.http,
+                        callback_url=settings.REDE_NOTIFICATION_URL.format(self.conta_id)
+                    )
+                ),
+                customer_details=CustomerDetails(
+                    first_name=self.formatador.trata_unicode_com_limite(self.nome_para_entrega.split(" ")[0], limite=50),
+                    surname=self.formatador.trata_unicode_com_limite(self.nome_para_entrega.split(" ")[1], limite=50),
+                    address_line1=self.endereco(TipoEndereco.entrega),
+                    address_line2=self.formatador.trata_unicode_com_limite(self.pedido.endereco_entrega.complemento, limite=60),
+                    city=self.formatador.trata_unicode_com_limite(self.pedido.endereco_entrega.cidade, limite=25),
+                    state_province=self.formatador.trata_unicode_com_limite(self.pedido.endereco_entrega.estado, limite=25),
+                    country="BR",
+                    zip_code=self.pedido.endereco_entrega.cep,
+                    delivery_date=self.formatador.formata_data(self.pedido.provavel_data_entrega),
+                    delivery_method=self.pedido.pedido_envio.envio.nome,
+                    risk_details=RiskDetails(
+                        account_number=self.pedido.cliente_id,
+                        email_address=self.pedido.cliente.email,
+                        session_id=self.dados["session_id"],
+                        ip_address=self.dados["ip_address"]
+                    ),
+                    personal_details=PersonalDetails(
+                        first_name=self.formatador.trata_unicode_com_limite(self.nome_do_cliente.split(" ")[0], limite=32),
+                        surname=self.formatador.trata_unicode_com_limite(self.nome_do_cliente.split(" ")[1], limite=32),
+                        telephone="{}{}".format(*self.telefone_do_cliente),
+                        date_of_birth=self.formatador.formata_data(self.pedido.cliente.data_nascimento),
+                        id_number=self.documento_de_cliente,
+                    ),
+                    address_details=AddressDetails(
+                        address_line1=self.endereco(),
+                        address_line2=self.formatador.trata_unicode_com_limite(self.pedido.cliente.endereco.complemento, limite=60),
+                        city=self.formatador.trata_unicode_com_limite(self.pedido.cliente.endereco.cidade, limite=25),
+                        state_province=self.formatador.trata_unicode_com_limite(self.pedido.cliente.endereco.estado, limite=25),
+                        country="BR",
+                        zip_code=self.pedido.cliente.endereco.cep
+                    ),
+                    payment_details=PaymentDetails(
+                        payment_method=MeiosDePagamento.credito
+                    ),
+                    order_datails=OrderDetails(
+                        discount_value=self.formatador.formata_decimal(self.valor_desconto, em_centavos=True),
+                        time_zone=self.fuso_horario,
+                        proposition_date=self.formatador.formata_data(self.pedido.provavel_data_envio),
+                        billing_details=BillingDetails(
+                            name=self.dados["cartao_nome"],
+                            address_line1=self.endereco(TipoEndereco.pagamento),
+                            address_line2=self.formatador.trata_unicode_com_limite(self.pedido.endereco_pagamento.complemento, limite=60),
+                            city=self.formatador.trata_unicode_com_limite(self.pedido.endereco_pagamento.cidade, limite=25),
+                            state_province=self.formatador.trata_unicode_com_limite(self.pedido.endereco_pagamento.estado, limite=25),
+                            country="BR",
+                            zip_code=self.pedido.endereco_pagamento.cep
+                        ),
+                        line_items=LineItems(
+                            item=self.items
+                        )
+                    )
+                )
+            )
+        )
+        return risco
 
     def gerar_dados_de_envio(self, passo=None):
         self.passo_atual = self.dados["passo"]
@@ -111,3 +232,26 @@ class EnviarPedido(Enviar):
         retorno["sucesso"] = sucesso
         return {"content": retorno, "status": (200 if sucesso else 500), "reenviar": False}
 
+    @property
+    def fuso_horario(self):
+        estado, municipio = self.pedido.cliente.endereco.estado, self.pedido.cliente.endereco.cidade
+        if estado == "AM":
+            if municipio in [u"Atalaia do Norte", u"Benjamin Constant", u"Boca do Acre", u"Eirunepé", u"Envira", u"Guajará", u"Ipixuna", u"Itamarati", u"Jutaí", u"Lábrea", u"Pauini", u"São Paulo de Olivença", u"Tabatinga"]:
+                return "-05:00"
+        if estado == "AC":
+            return "-05:00"
+        if estado in ["AM", "MT", "MS", "RO", "RR"]:
+            return "-04:00"
+        return "-03:00"
+
+    @property
+    def items(self):
+        return [
+            Item(
+                product_code=self.formatador.trata_unicode_com_limite(item.sku, limite=50),
+                product_description=self.formatador.trata_unicode_com_limite(item.nome, limite=50),
+                order_quantity=self.formatador.formata_decimal(item.quantidade, como_int=True),
+                unit_price=self.formatador.formata_decimal(item.preco_venda, em_centavos=True)
+            )
+            for item in self.pedido.itens.all()
+        ]
