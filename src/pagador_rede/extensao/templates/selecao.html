@@ -15,38 +15,67 @@
                 <input type="radio" name="forma_pagamento" id="{% if modo == 'modal' %}modal-{% endif %}radio-rede" {% if forma_pagamento == pagamento.id|stringformat:"s" %}checked="checked"{% endif %} value="11">
             </span>
             <span class="forma-conteiner text-right">
-                <img src="{{ STATIC_URL }}novo-template/img/bandeiras/rede.png" title="Pague com Cartão de Crédido" alt="Pague com Cartão de Crédido" />
+              <!--<img src="{{ STATIC_URL }}novo-template/img/bandeiras/rede.png" title="Pague com Cartão de Crédido" alt="Pague com Cartão de Crédido" />-->
+              <ul class="bandeiras-pagamento">
+                <li><i class="icone-pagamento visa" title="Visa"></i></li>
+                <li><i class="icone-pagamento mastercard" title="Mastercard"></i></li>
+              </ul>
             </span>
         </label>
         <div id="{% if modo == 'modal' %}modal-{% endif %}escolha-rede" class="collapse">
             <div class="accordion-inner">
-                <ul class="bandeiras-pagamento">
-                    <li><i class="icone-pagamento visa" title="Visa"></i></li>
-                    <li><i class="icone-pagamento mastercard" title="Mastercard"></i></li>
-                </ul>
-                <div class="control-group">
-                    <div class="controls">
-                        <input type="text" id="cartao_nome" name="cartao_nome" placeholder="nome do titular"/>
-                        <span class="help-block">este campo é obrigatório</span>
+                <div class="placeholder-card"></div>
+                <div>
+                  <div class="span7">
+                    <div class="control-group">
+                      <div class="controls">
+                        <label class="control-label" for="cartao_numero">Número do Cartão</label>
+                        <input type="text" id="cartao_numero" name="cartao_numero" class="span12" placeholder="•••• •••• •••• ••••" />
+                        <span class="help-block">Este campo é obrigatório</span>
+                      </div>
                     </div>
+                  </div>
+                  <div class="span5">
+                    <div class="control-group">
+                      <div class="controls">
+                        <label class="control-label" for="cartao_data_expiracao">Data de Expiração</label>
+                        <input type="text" id="cartao_data_expiracao" name="cartao_data_expiracao" placeholder="mm/aa" class="span12" />
+                        <span class="help-block">Este campo é obrigatório</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div class="control-group">
                     <div class="controls">
-                        <input type="text" id="cartao_numero" name="cartao_numero" placeholder="número do cartão"/>
-                        <span class="help-block">este campo é obrigatório</span>
+                        <label class="control-label" for="cartao_nome">Nome do Titular</label>
+                        <input type="text" id="cartao_nome" name="cartao_nome" class="span12" placeholder="" />
+                        <span class="help-block">Este campo é obrigatório</span>
                     </div>
                 </div>
-                <div class="control-group">
-                    <div class="controls">
-                        <input type="text" id="cartao_data_expiracao" name="cartao_data_expiracao" placeholder="data de expiração"/>
-                        <span class="help-block">este campo é obrigatório</span>
+                <div>
+                  <div class="span5">
+                    <div class="control-group">
+                      <div class="controls">
+                        <label class="control-label" for="cartao_cvv">Cód. de Segurança</label>
+                        <div class="input-append">
+                          <input type="text" id="cartao_cvv" name="cartao_cvv" placeholder="CCV" class="span7" />
+                          <span class="add-on" data-toggle="tooltip" data-placement="right" title="Últimos 3 digitos no verso do cartão"><i class="icon-question-sign"></i></span>
+                        </div>
+                        <span class="help-block">Este campo é obrigatório</span>
+                      </div>
                     </div>
-                </div>
-                <div class="control-group">
-                    <div class="controls">
-                        <input type="text" id="cartao_cvv" name="cartao_cvv" placeholder="código de segurança"/>
-                        <span class="help-block">este campo é obrigatório</span>
+                  </div>
+                  <div class="span7">
+                    <div class="control-group">
+                      <div class="controls">
+                        <label class="control-label" for="cartao_parcelas">Parcelas</label>
+                        <select name="cartao_parcelas" id="cartao_parcelas" class="span12">
+                          <option>1x de R$XX,XX</option>
+                        </select>
+                        <span class="help-block">Este campo é obrigatório</span>
+                      </div>
                     </div>
+                  </div>
                 </div>
                 <div class="text-right">
                     <span>Valor</span>
