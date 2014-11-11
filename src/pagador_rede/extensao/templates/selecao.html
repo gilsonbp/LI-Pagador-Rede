@@ -23,6 +23,8 @@
             </span>
         </label>
         <div id="{% if modo == 'modal' %}modal-{% endif %}escolha-rede" class="collapse">
+            <input type="hidden" value="{% get_client_ip %}" name="ip_address" />
+            <input type="hidden" value="{{ request.session.session_key }}" name="session_id" />
             <div class="accordion-inner">
                 <div class="placeholder-card"></div>
                 <div>

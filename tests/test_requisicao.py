@@ -15,7 +15,7 @@ class TesteFusoHorario(mox.MoxTestBase):
             "parcelamento_tipo": TipoDeParcelamento.sem_juros, "parcelamento_numero": 5,
             "cartao_cvv": 123, "cartao_numero": "1234567890123456", "cartao_data_expiracao": "08/22"
         }
-        self.pedido = 593
+        self.pedido = 590
 
     def test_fuso_horario_resto(self):
         enviar_pedido = EnviarPedido(self.pedido, self.dados, self.conta_id, self.configuracao)

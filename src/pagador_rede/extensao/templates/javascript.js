@@ -25,8 +25,7 @@ $(function() {
             .done(function (data) {
                 console.log(data);
                 if (data.sucesso) {
-                    $("#aguarde").hide();
-                    exibeMensagemSucesso("pago");
+                    window.location = window.location;
                 }
                 else {
                     if (data.status == 400 || data.status == 401) {
@@ -86,7 +85,7 @@ $(function() {
     }
 
     var pedidoPago = '{{ pedido.situacao_id }}' == '4';
-    var pedidoAguardandoPagamento = '{{ pedido.situacao_id }}' == '2';
+    var pedidoPagamentoEmAnalise = '{{ pedido.situacao_id }}' == '3';
 
     if (window.location.search != "" && window.location.search.indexOf("failure") > -1) {
         exibeMensagemErro(500, "Pagamento cancelado no Rede!");
@@ -94,7 +93,7 @@ $(function() {
     else if (window.location.search != "" && window.location.search.indexOf("success") > -1 || pedidoPago) {
         exibeMensagemSucesso("pago");
     }
-    else if (window.location.search != "" && window.location.search.indexOf("pending") > -1 || pedidoAguardandoPagamento) {
+    else if (window.location.search != "" && window.location.search.indexOf("pending") > -1 || pedidoPagamentoEmAnalise) {
         exibeMensagemSucesso("aguardando");
     }
     else {
