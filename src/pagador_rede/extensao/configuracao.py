@@ -33,8 +33,8 @@ class MeioPagamentoCadastro(CadastroBase):
             ]
         }
 
-PARCELAS = [(x, x) for x in range(1, 19)]
-PARCELAS.insert(0, (18, "Todas"))
+PARCELAS = [(x, x) for x in range(1, 13)]
+PARCELAS.insert(0, (12, "Todas"))
 
 
 class Formulario(FormularioBase):
