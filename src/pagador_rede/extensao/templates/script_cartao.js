@@ -49,7 +49,7 @@ $(function() {
         $group.find(".help-block").show();
     }
     zeraValidacao();
-    $("#cartao_numero").mask("9999 9999 9999 9999");
+    $("#cartao_numero").mask("9999 9999 9999 9999", {"placeholder": "•"});
     $("#cartao_data_expiracao").mask("99/99");
     $("#cartao_cvv").mask("999");
     if ($("#radio-rede").is(":checked")) {
