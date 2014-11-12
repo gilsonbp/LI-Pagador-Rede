@@ -73,6 +73,7 @@
                         <label class="control-label" for="cartao_parcelas">Parcelas</label>
                         <select name="cartao_parcelas" id="cartao_parcelas" class="span12"></select>
                         <input type="hidden" value="false" name="cartao_parcelas_sem_juros" id="cartao_parcelas_sem_juros" />
+                        <input type="hidden" value="{{ carrinho_subtotal|formatar_decimal_br }}" name="cartao_valor_parcela" id="cartao_valor_parcela" />
                         <span class="help-block">Este campo é obrigatório</span>
                       </div>
                     </div>

@@ -118,6 +118,43 @@ class EnviarPedido(Enviar):
         self._pedido_pagamento = self.pedido.pedido_pagamentos.get(pagamento=self.pedido.pagamento)
         return self._pedido_pagamento
 
+    def gerar_dados_de_envio(self, passo=None):
+        self.passo_atual = self.dados["passo"]
+        if self.pedido_pagamento.identificador_id == StatusDeRetorno.revisao:
+            self.passo_atual = PassosDeEnvio.accept_review
+        return self.request.to_xml(top=True)
+
+    @property
+    def valores_de_pagamento(self):
+        valores = {
+            "transacao_id": self.dados["Response"]["gateway_reference"],
+            "identificador_id": self.dados["Response"]["CardTxn"]["authcode"],
+            "valor_pago": self.pedido.valor_total,
+        }
+        if self.tem_parcelas:
+            valores["conteudo_json"] = {
+                "numero_parcelas": int(self.dados["cartao_parcelas"]),
+                "valor_parcela": float(self.dados["cartao_valor_parcela"]),
+                "sem_juros": self.dados["cartao_parcelas_sem_juros"] == "true"
+            }
+        return valores
+
+    def processar_resposta(self, resposta):
+        retorno = self.formatador.xml_para_dict(resposta.content)
+        self.dados.update(retorno)
+        if resposta.status_code != 200:
+            return {"content": retorno, "status": resposta.status_code, "reenviar": False}
+        sucesso = retorno["Response"]["status"] in [StatusDeRetorno.sucesso, StatusDeRetorno.revisao]
+        retorno["sucesso"] = sucesso
+        if retorno["Response"]["status"] == StatusDeRetorno.revisao:
+            retorno["Response"]["CardTxn"]["authcode"] = StatusDeRetorno.revisao
+        return {"content": retorno, "status": (200 if sucesso else 500), "reenviar": False}
+
+    @property
+    def tem_parcelas(self):
+        parcelas = self.dados.get("cartao_parcelas", 1)
+        return int(parcelas) > 1
+
     @property
     def request(self):
         transaction = None
@@ -137,7 +174,7 @@ class EnviarPedido(Enviar):
             )
             if self.configuracao_pagamento.usar_antifraude:
                 txn_details.define_valor_de_atributo("Risk", {"risk": self.anti_fraude})
-            if int(self.dados["cartao_parcelas"]) > 1:
+            if self.tem_parcelas:
                 tipo = TipoDeParcelamento.sem_juros if self.dados["cartao_parcelas_sem_juros"] == "true" else TipoDeParcelamento.com_juros
                 instalments = Instalments(type=tipo, number=self.dados["cartao_parcelas"])
                 txn_details.define_valor_de_atributo("Instalments", {"instalments": instalments})
@@ -281,31 +318,6 @@ class EnviarPedido(Enviar):
             merchant_location="Loja Integrada",
             callback_configuration=self.callback_configuration
         )
-
-    def gerar_dados_de_envio(self, passo=None):
-        self.passo_atual = self.dados["passo"]
-        if self.pedido_pagamento.identificador_id == StatusDeRetorno.revisao:
-            self.passo_atual = PassosDeEnvio.accept_review
-        return self.request.to_xml(top=True)
-
-    @property
-    def valores_de_pagamento(self):
-        return {
-            "transacao_id": self.dados["Response"]["gateway_reference"],
-            "identificador_id": self.dados["Response"]["CardTxn"]["authcode"],
-            "valor_pago": self.pedido.valor_total,
-        }
-
-    def processar_resposta(self, resposta):
-        retorno = self.formatador.xml_para_dict(resposta.content)
-        self.dados.update(retorno)
-        if resposta.status_code != 200:
-            return {"content": retorno, "status": resposta.status_code, "reenviar": False}
-        sucesso = retorno["Response"]["status"] in [StatusDeRetorno.sucesso, StatusDeRetorno.revisao]
-        retorno["sucesso"] = sucesso
-        if retorno["Response"]["status"] == StatusDeRetorno.revisao:
-            retorno["Response"]["CardTxn"]["authcode"] = StatusDeRetorno.revisao
-        return {"content": retorno, "status": (200 if sucesso else 500), "reenviar": False}
 
     @property
     def fuso_horario(self):

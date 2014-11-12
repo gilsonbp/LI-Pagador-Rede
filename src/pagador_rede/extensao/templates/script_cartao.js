@@ -62,6 +62,7 @@ $(function() {
         var $this = $(this);
         var $option = $this.find("option[value='" + $this.val() + "']");
         $("#cartao_parcelas_sem_juros").val($option.data("sem-juros"));
+        $("#cartao_valor_parcela").val($option.data("valor-parcela"));
     });
 });
 
@@ -87,9 +88,10 @@ var Parcela = {
     },
     _renderizaOption: function(parcela) {
         return [
-            '<option data-sem-juros="{}"'.replace("{}", parcela["sem_juros"]),
+            '<option data-sem-juros="{}" '.replace("{}", parcela["sem_juros"]),
+                'data-valor-parcela="{}" '.replace("{}", parcela["valor_parcelado"]),
                 'value="{}">'.replace("{}", parcela["numero_parcelas"]),
-                '{}x de R$ {}'.replace("{}", parcela["numero_parcelas"]).replace("{}", parcela["valor_parcelado"]),
+                '{}x de R$ {}'.replace("{}", parcela["numero_parcelas"]).replace("{}", parcela["valor_parcelado"].replace(".", ",").replace(/\d(?=(\d{3})+\,)/g, '$&.')),
                 (parcela["sem_juros"] ? " sem juros": ""),
             '</option>'
         ].join("");
@@ -124,7 +126,7 @@ var Parcela = {
             }
             if (valor_parcelado > pagamento["valor_minimo_parcela"]) {
                 parcela = {
-                    'valor_parcelado': valor_parcelado.toFixed(2).replace(".", ",").replace(/\d(?=(\d{3})+\,)/g, '$&.'),
+                    'valor_parcelado': valor_parcelado.toFixed(2),
                     'numero_parcelas': parcela["numero_parcelas"],
                     'sem_juros': sem_juros
                 };
@@ -136,7 +138,7 @@ var Parcela = {
     preencheParcelas: function() {
         var parcelasResultantes = this._parcelasResultantes();
 
-        var options = ['<option data-sem-juros="false" value="1">À Vista</option>'];
+        var options = ['<option data-sem-juros="false" data-valor-parcela="{}" value="1">À Vista</option>'.replace("{}", this.valor)];
         for (var i = 1; i < parcelasResultantes.length; i++) {
             options.push(this._renderizaOption(parcelasResultantes[i]));
         }
