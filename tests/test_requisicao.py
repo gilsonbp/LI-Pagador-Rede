@@ -2,7 +2,7 @@
 import mox
 from pagador.configuracao.models import FormaDePagamento, FormaDePagamentoConfiguracao
 from pagador.envio.requisicao import EnviarPedido
-from pagador_rede.extensao.envio import TipoDeParcelamento
+from pagador_rede.extensao.requisicao import TipoDeParcelamento
 
 
 class TesteFusoHorario(mox.MoxTestBase):

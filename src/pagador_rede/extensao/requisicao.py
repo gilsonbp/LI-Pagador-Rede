@@ -140,7 +140,7 @@ class EnviarPedido(Enviar):
             if int(self.dados["cartao_parcelas"]) > 1:
                 tipo = TipoDeParcelamento.sem_juros if self.dados["cartao_parcelas_sem_juros"] == "true" else TipoDeParcelamento.com_juros
                 instalments = Instalments(type=tipo, number=self.dados["cartao_parcelas"])
-                txn_details.define_valor_de_atributo("instalments", {"instalments": instalments})
+                txn_details.define_valor_de_atributo("Instalments", {"instalments": instalments})
             transaction = Transaction(card_txn=card_txn, txn_details=txn_details)
         if self.passo_atual == PassosDeEnvio.accept_review:
             historic_txn = HistoricTxn(reference=self.pedido_pagamento.transacao_id, method=self.passo_atual)
