@@ -1,5 +1,8 @@
+//{% load filters %}
+
 var camposObrigatorios = ["#cartao_nome", "#cartao_numero", "#cartao_data_expiracao", "#cartao_cvv"];
-$(function() {
+$(function() //noinspection JSUnresolvedVariable,JSUnresolvedVariable
+{
     $("#formas-pagamento-wrapper").on("click", "#finalizarCompra", function(event) {
         zeraValidacao();
         if (!$("#radio-rede").is(":checked")) {
@@ -55,4 +58,55 @@ $(function() {
     if ($("#radio-rede").is(":checked")) {
         $("#escolha-rede").addClass("in");
     }
+
+    var pagamento = {% autoescape off %}{{ pagamento|to_json }}{% endautoescape %};
+
+    function preencheParcelas() {
+        var valor = $(".pagamento-valor").text().replace("R$", "").trim();
+        if (valor) {
+            if (valor.indexOf(",") > -1) {
+                valor = valor.replace(/[\.|\,]/g, "");
+            }
+            valor = parseInt(valor) / 100;
+        }
+        var listaParcelas = [];
+        var todas_parcelas = [];
+        if (pagamento["maximo_parcelas"]) {
+            todas_parcelas = pagamento["parcelas"].slice(0, pagamento["maximo_parcelas"]);
+        }
+        else if (pagamento["parcelas_sem_juros"]) {
+            todas_parcelas = pagamento["parcelas"].slice(0, pagamento["parcelas_sem_juros"]);
+        }
+        else {
+            todas_parcelas = pagamento["parcelas"];
+        }
+
+        for (var indiceParcela = 0; indiceParcela < todas_parcelas.length; indiceParcela++) {
+            var parcela = todas_parcelas[indiceParcela];
+            var sem_juros = false;
+            var valor_parcelado = parcela["fator"] * valor;
+            if (pagamento["parcelas_sem_juros"] && pagamento["parcelas_sem_juros"] >= parcela["numero_parcelas"]) {
+                sem_juros = true;
+                valor_parcelado = valor / parcela["numero_parcelas"]
+            }
+            if (valor_parcelado > pagamento["valor_minimo_parcela"]) {
+                parcela = {
+                    'valor_parcelado': valor_parcelado.toFixed(2).replace(".", ",").replace(/\d(?=(\d{3})+\,)/g, '$&.'),
+                    'numero_parcelas': parcela["numero_parcelas"],
+                    'sem_juros': sem_juros
+                };
+                listaParcelas.push(parcela)
+            }
+        }
+        var options = ['<option value="1">A Vista</option>'];
+        for (var i = 1; i < listaParcelas.length; i++) {
+            var parcela = listaParcelas[i];
+            options.push('<option value="' + parcela["numero_parcelas"] + '">' + parcela["numero_parcelas"] + 'x de R$ ' + parcela["valor_parcelado"] + (parcela["sem_juros"] ? " sem juros": "") + '</option>');
+        }
+        $("#cartao_parcelas").html(options.join());
+    }
+    $('.rede .preco-carrinho-total').on("carrinho.valor_alterado", function() {
+        preencheParcelas();
+    });
+    preencheParcelas();
 });
