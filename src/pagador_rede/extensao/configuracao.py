@@ -42,9 +42,10 @@ class Formulario(FormularioBase):
     numero_estabelecimento = CampoFormulario("token", u"Número do Estabelecimento", requerido=True, tamanho_max=128, ordem=2)
     senha = CampoFormulario("senha", u"Senha", requerido=True, tamanho_max=128, ordem=3)
     usar_antifraude = CampoFormulario("usar_antifraude", u"Usar o serviço de Anti Fraude", tipo=TipoDeCampo.boleano, requerido=False, ordem=4)
-    mostrar_parcelamento = CampoFormulario("mostrar_parcelamento", "Marque para mostrar o parcelamento na listagem dos produtos e na página do produto.", tipo=TipoDeCampo.boleano, requerido=False, ordem=5)
-    maximo_parcelas = CampoFormulario("maximo_parcelas", "Máximo de parcelas", tipo=TipoDeCampo.escolha, requerido=False, ordem=6, texto_ajuda=u"Quantidade máxima de parcelas para esta forma de pagamento.", opcoes=PARCELAS)
-    parcelas_sem_juros = CampoFormulario("parcelas_sem_juros", "Parcelas sem juros", tipo=TipoDeCampo.escolha, requerido=False, ordem=7, texto_ajuda=u"Número de parcelas sem juros para esta forma de pagamento.", opcoes=PARCELAS)
+    juros_valor = CampoFormulario("juros_valor", u"Taxa de Juros", requerido=False, decimais=6, ordem=5, tipo=TipoDeCampo.decimal, texto_ajuda=u"Informe a taxa de juros para sua loja no Rede")
+    mostrar_parcelamento = CampoFormulario("mostrar_parcelamento", "Marque para mostrar o parcelamento na listagem dos produtos e na página do produto.", tipo=TipoDeCampo.boleano, requerido=False, ordem=6)
+    maximo_parcelas = CampoFormulario("maximo_parcelas", "Máximo de parcelas", tipo=TipoDeCampo.escolha, requerido=False, ordem=7, texto_ajuda=u"Quantidade máxima de parcelas para esta forma de pagamento.", opcoes=PARCELAS)
+    parcelas_sem_juros = CampoFormulario("parcelas_sem_juros", "Parcelas sem juros", tipo=TipoDeCampo.escolha, requerido=False, ordem=8, texto_ajuda=u"Número de parcelas sem juros para esta forma de pagamento.", opcoes=PARCELAS)
 
 
 class MeioPagamentoEnvio(object):
