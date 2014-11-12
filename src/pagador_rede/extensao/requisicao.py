@@ -5,7 +5,8 @@ from pagador.envio.models import SituacaoPedido
 from pagador.envio.requisicao import Enviar
 from pagador.envio.serializacao import ValorComAtributos
 from pagador_rede.extensao.envio import (Request, Authentication, AcquirerCode, Transaction, CardTxn, Card, Cv2Avs, TxnDetails, Instalments,
-                                         TipoDeCartao, MetodoDeCaptura, HistoricTxn, Risk, Action, MerchantConfiguration, CallbackConfiguration, CustomerDetails, RiskDetails, PersonalDetails, AddressDetails, PaymentDetails, OrderDetails, BillingDetails, LineItems, Item)
+                                         HistoricTxn, Risk, Action, MerchantConfiguration, CallbackConfiguration, CustomerDetails, RiskDetails, PersonalDetails, AddressDetails,
+                                         PaymentDetails, OrderDetails, BillingDetails, LineItems, Item)
 
 
 class PassosDeEnvio(object):
@@ -65,6 +66,21 @@ class TipoEndereco(object):
     pagamento = 3
 
 
+class TipoDeCartao(object):
+    credito = "credit"
+    debito = "debit"
+
+
+class MetodoDeCaptura(object):
+    ecomm = "ecomm"
+    cont_auth = "cont_auth"
+
+
+class TipoDeParcelamento(object):
+    com_juros = "interest_bearing"
+    sem_juros = "zero_interest"
+
+
 class EnviarPedido(Enviar):
     def __init__(self, pedido, dados, configuracao_pagamento):
         super(EnviarPedido, self).__init__(pedido, dados, configuracao_pagamento)
@@ -121,8 +137,9 @@ class EnviarPedido(Enviar):
             )
             if self.configuracao_pagamento.usar_antifraude:
                 txn_details.define_valor_de_atributo("Risk", {"risk": self.anti_fraude})
-            if self.dados.get("parcelamento_tipo"):
-                instalments = Instalments(type=self.dados["parcelamento_tipo"], number=self.dados["parcelamento_numero"])
+            if int(self.dados["cartao_parcelas"]) > 1:
+                tipo = TipoDeParcelamento.sem_juros if self.dados["cartao_parcelas_sem_juros"] == "true" else TipoDeParcelamento.com_juros
+                instalments = Instalments(type=tipo, number=self.dados["cartao_parcelas"])
                 txn_details.define_valor_de_atributo("instalments", {"instalments": instalments})
             transaction = Transaction(card_txn=card_txn, txn_details=txn_details)
         if self.passo_atual == PassosDeEnvio.accept_review:
@@ -141,6 +158,19 @@ class EnviarPedido(Enviar):
             transaction=transaction
         )
         return request
+
+    @property
+    def anti_fraude(self):
+        risco = Risk(
+            action=ValorComAtributos(
+                Action(
+                    merchant_configuration=self.merchant_configuration,
+                    customer_details=self.customer_details
+                ),
+                {"service": "1"}
+            )
+        )
+        return risco
 
     def endereco(self, tipo=TipoEndereco.cliente):
         if tipo == TipoEndereco.cliente:
@@ -251,19 +281,6 @@ class EnviarPedido(Enviar):
             merchant_location="Loja Integrada",
             callback_configuration=self.callback_configuration
         )
-
-    @property
-    def anti_fraude(self):
-        risco = Risk(
-            action=ValorComAtributos(
-                Action(
-                    merchant_configuration=self.merchant_configuration,
-                    customer_details=self.customer_details
-                ),
-                {"service": "1"}
-            )
-        )
-        return risco
 
     def gerar_dados_de_envio(self, passo=None):
         self.passo_atual = self.dados["passo"]

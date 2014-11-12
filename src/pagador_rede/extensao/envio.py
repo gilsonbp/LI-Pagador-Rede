@@ -1,27 +1,5 @@
 # -*- coding: utf-8 -*-
-from pagador.envio.serializacao import EntidadeSerializavel, Atributo
-
-
-class TipoDeCartao(object):
-    credito = "credit"
-    debito = "debit"
-
-
-class MetodoDeCaptura(object):
-    ecomm = "ecomm"
-    cont_auth = "cont_auth"
-
-
-class Metodo(object):
-    completo = "auth"
-    pre = "pre"
-    captura = "fulfill"
-    cancelar = "cancel"
-
-
-class TipoDeParcelamento(object):
-    com_juros = "interest_bearing"
-    sem_juros = "zero_interest"
+from pagador.envio.serializacao import EntidadeSerializavel
 
 
 class Request(EntidadeSerializavel):

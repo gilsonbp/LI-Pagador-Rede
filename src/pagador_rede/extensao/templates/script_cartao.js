@@ -1,7 +1,7 @@
 //{% load filters %}
 
 var camposObrigatorios = ["#cartao_nome", "#cartao_numero", "#cartao_data_expiracao", "#cartao_cvv"];
-$(function() //noinspection JSUnresolvedVariable,JSUnresolvedVariable
+$(function()
 {
     $("#formas-pagamento-wrapper").on("click", "#finalizarCompra", function(event) {
         zeraValidacao();
@@ -98,15 +98,20 @@ $(function() //noinspection JSUnresolvedVariable,JSUnresolvedVariable
                 listaParcelas.push(parcela)
             }
         }
-        var options = ['<option value="1">A Vista</option>'];
+        var options = ['<option data-sem-juros="false" value="1">À Vista</option>'];
         for (var i = 1; i < listaParcelas.length; i++) {
             var parcela = listaParcelas[i];
-            options.push('<option value="' + parcela["numero_parcelas"] + '">' + parcela["numero_parcelas"] + 'x de R$ ' + parcela["valor_parcelado"] + (parcela["sem_juros"] ? " sem juros": "") + '</option>');
+            options.push('<option data-sem-juros="' + parcela["sem_juros"] + '" value="' + parcela["numero_parcelas"] + '">' + parcela["numero_parcelas"] + 'x de R$ ' + parcela["valor_parcelado"] + (parcela["sem_juros"] ? " sem juros": "") + '</option>');
         }
         $("#cartao_parcelas").html(options.join());
     }
     $('.rede .preco-carrinho-total').on("carrinho.valor_alterado", function() {
         preencheParcelas();
+    });
+    $("#cartao_parcelas").change(function() {
+        var $this = $(this);
+        var $option = $this.find("option[value='" + $this.val() + "']");
+        $("#cartao_parcelas_sem_juros").val($option.data("sem-juros"));
     });
     preencheParcelas();
 });
