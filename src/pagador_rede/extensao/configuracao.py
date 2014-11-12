@@ -70,10 +70,10 @@ class MeioPagamentoEnvio(object):
 
 class MeioPagamentoSelecao(SelecaoBase):
     selecao = Script(tipo=TipoScript.html, nome="selecao", caminho_arquivo=caminho_do_arquivo_de_template("selecao.html"), eh_template=True)
-    script_cartao = Script(tipo=TipoScript.javascript, nome="cartao", caminho_arquivo=caminho_do_arquivo_de_template("script_cartao.js"), eh_template=True)
+    script_cartao = Script(tipo=TipoScript.javascript, nome="cartao", caminho_arquivo=caminho_do_arquivo_de_template("script_cartao.js"))
 
     def to_dict(self):
         return [
+            self.script_cartao.to_dict(),
             self.selecao.to_dict(),
-            self.script_cartao.to_dict()
         ]

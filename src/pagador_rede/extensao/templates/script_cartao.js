@@ -1,8 +1,5 @@
-//{% load filters %}
-
 var camposObrigatorios = ["#cartao_nome", "#cartao_numero", "#cartao_data_expiracao", "#cartao_cvv"];
-$(function()
-{
+$(function() {
     $("#formas-pagamento-wrapper").on("click", "#finalizarCompra", function(event) {
         zeraValidacao();
         if (!$("#radio-rede").is(":checked")) {
@@ -58,31 +55,67 @@ $(function()
     if ($("#radio-rede").is(":checked")) {
         $("#escolha-rede").addClass("in");
     }
+    $('.rede .preco-carrinho-total').on("carrinho.valor_alterado", function() {
+        Parcela.preencheParcelas();
+    });
+    $("#cartao_parcelas").change(function() {
+        var $this = $(this);
+        var $option = $this.find("option[value='" + $this.val() + "']");
+        $("#cartao_parcelas_sem_juros").val($option.data("sem-juros"));
+    });
+});
 
-    var pagamento = {% autoescape off %}{{ pagamento|to_json }}{% endautoescape %};
 
-    function preencheParcelas() {
-        var valor = $(".pagamento-valor").text().replace("R$", "").trim();
+var Parcela = {
+    init: function(pagamento, seletorValor, seletorParcelas) {
+        this.$campoValor = $(seletorValor);
+        this.$campoParcelas = $(seletorParcelas);
+        this._atualizaValor();
+        this.pagamento = pagamento;
+    },
+    _atualizaValor: function() {
+        var valor = this.$campoValor.text().replace("R$", "").trim();
         if (valor) {
             if (valor.indexOf(",") > -1) {
                 valor = valor.replace(/[\.|\,]/g, "");
             }
-            valor = parseInt(valor) / 100;
-        }
-        var listaParcelas = [];
-        var todas_parcelas = [];
-        if (pagamento["maximo_parcelas"]) {
-            todas_parcelas = pagamento["parcelas"].slice(0, pagamento["maximo_parcelas"]);
-        }
-        else if (pagamento["parcelas_sem_juros"]) {
-            todas_parcelas = pagamento["parcelas"].slice(0, pagamento["parcelas_sem_juros"]);
+            this.valor = parseInt(valor) / 100;
         }
         else {
-            todas_parcelas = pagamento["parcelas"];
+            this.valor = 0.0
         }
-
-        for (var indiceParcela = 0; indiceParcela < todas_parcelas.length; indiceParcela++) {
-            var parcela = todas_parcelas[indiceParcela];
+    },
+    _renderizaOption: function(parcela) {
+        return [
+            '<option data-sem-juros="{}"'.replace("{}", parcela["sem_juros"]),
+                'value="{}">'.replace("{}", parcela["numero_parcelas"]),
+                '{}x de R$ {}'.replace("{}", parcela["numero_parcelas"]).replace("{}", parcela["valor_parcelado"]),
+                (parcela["sem_juros"] ? " sem juros": ""),
+            '</option>'
+        ].join("");
+    },
+    _parcelasPossiveis: function() {
+        this.pagamento;
+        var resultado = [];
+        if (this.pagamento["maximo_parcelas"]) {
+            resultado = this.pagamento["parcelas"].slice(0, this.pagamento["maximo_parcelas"]);
+        }
+        else if (this.pagamento["parcelas_sem_juros"]) {
+            resultado = this.pagamento["parcelas"].slice(0, this.pagamento["parcelas_sem_juros"]);
+        }
+        else {
+            resultado = this.pagamento["parcelas"];
+        }
+        return resultado;
+    },
+    _parcelasResultantes: function () {
+        this._atualizaValor();
+        var pagamento = this.pagamento;
+        var valor = this.valor;
+        var parcelasPosiveis = this._parcelasPossiveis();
+        var parcelasResultantes = [];
+        for (var indiceParcela = 0; indiceParcela < parcelasPosiveis.length; indiceParcela++) {
+            var parcela = parcelasPosiveis[indiceParcela];
             var sem_juros = false;
             var valor_parcelado = parcela["fator"] * valor;
             if (pagamento["parcelas_sem_juros"] && pagamento["parcelas_sem_juros"] >= parcela["numero_parcelas"]) {
@@ -95,23 +128,18 @@ $(function()
                     'numero_parcelas': parcela["numero_parcelas"],
                     'sem_juros': sem_juros
                 };
-                listaParcelas.push(parcela)
+                parcelasResultantes.push(parcela)
             }
         }
+        return parcelasResultantes;
+    },
+    preencheParcelas: function() {
+        var parcelasResultantes = this._parcelasResultantes();
+
         var options = ['<option data-sem-juros="false" value="1">À Vista</option>'];
-        for (var i = 1; i < listaParcelas.length; i++) {
-            var parcela = listaParcelas[i];
-            options.push('<option data-sem-juros="' + parcela["sem_juros"] + '" value="' + parcela["numero_parcelas"] + '">' + parcela["numero_parcelas"] + 'x de R$ ' + parcela["valor_parcelado"] + (parcela["sem_juros"] ? " sem juros": "") + '</option>');
+        for (var i = 1; i < parcelasResultantes.length; i++) {
+            options.push(this._renderizaOption(parcelasResultantes[i]));
         }
-        $("#cartao_parcelas").html(options.join());
+        this.$campoParcelas.html(options.join());
     }
-    $('.rede .preco-carrinho-total').on("carrinho.valor_alterado", function() {
-        preencheParcelas();
-    });
-    $("#cartao_parcelas").change(function() {
-        var $this = $(this);
-        var $option = $this.find("option[value='" + $this.val() + "']");
-        $("#cartao_parcelas_sem_juros").val($option.data("sem-juros"));
-    });
-    preencheParcelas();
-});
+};

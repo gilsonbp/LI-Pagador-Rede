@@ -83,6 +83,11 @@
                     <h5 class="titulo cor-principal text-right pagamento-valor preco-carrinho-total">
                         R$ {{ carrinho_subtotal|formatar_decimal_br }}
                     </h5>
+                    <script type="application/javascript">
+                        var pagamento = {% autoescape off %}{{ pagamento|to_json }}{% endautoescape %};
+                        Parcela.init(pagamento, ".preco-carrinho-total", "#cartao_parcelas");
+                        Parcela.preencheParcelas();
+                    </script>
                 </div>
             </div>
         </div>
