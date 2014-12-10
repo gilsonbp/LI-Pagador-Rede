@@ -110,6 +110,11 @@ var Parcela = {
         }
         return resultado;
     },
+    _calculaValorParcela: function(parcela) {
+        var jurosValor = this.pagamento["juros_valor"] / 100;
+        var jurosPotenciaParcela = Math.pow((1 + jurosValor), parcela["numero_parcelas"]);
+        return this.valor * jurosValor * jurosPotenciaParcela / (jurosPotenciaParcela - 1)
+    },
     _parcelasResultantes: function () {
         this._atualizaValor();
         var pagamento = this.pagamento;
@@ -119,7 +124,7 @@ var Parcela = {
         for (var indiceParcela = 0; indiceParcela < parcelasPosiveis.length; indiceParcela++) {
             var parcela = parcelasPosiveis[indiceParcela];
             var sem_juros = false;
-            var valor_parcelado = parcela["fator"] * valor;
+            var valor_parcelado = this._calculaValorParcela(parcela);
             if (pagamento["parcelas_sem_juros"] && pagamento["parcelas_sem_juros"] >= parcela["numero_parcelas"]) {
                 sem_juros = true;
                 valor_parcelado = valor / parcela["numero_parcelas"]
@@ -130,7 +135,7 @@ var Parcela = {
                     'numero_parcelas': parcela["numero_parcelas"],
                     'sem_juros': sem_juros
                 };
-                parcelasResultantes.push(parcela)
+                parcelasResultantes.push(parcela);
             }
         }
         return parcelasResultantes;
