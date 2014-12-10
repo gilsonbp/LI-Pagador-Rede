@@ -126,9 +126,10 @@ class EnviarPedido(Enviar):
 
     @property
     def valores_de_pagamento(self):
+        txn_key = "CardTxn" if self.passo_atual == PassosDeEnvio.pre else "HistoricTxn"
         valores = {
             "transacao_id": self.dados["Response"]["gateway_reference"],
-            "identificador_id": self.dados["Response"]["CardTxn"]["authcode"],
+            "identificador_id": self.dados["Response"][txn_key]["authcode"],
             "valor_pago": self.pedido.valor_total,
         }
         if self.tem_parcelas:
@@ -168,7 +169,7 @@ class EnviarPedido(Enviar):
             card_txn = CardTxn(card=card, method=self.passo_atual)
             txn_details = TxnDetails(
                 dba=self.configuracao_pagamento.usuario,
-                merchantreference=self.pedido.numero,
+                merchantreference="{:06d}".format(self.pedido.numero),
                 capturemethod=MetodoDeCaptura.ecomm,
                 amount=ValorComAtributos(self.formatador.formata_decimal(self.pedido.valor_total), {"currency": "BRL"})
             )

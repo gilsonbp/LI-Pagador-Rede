@@ -38,7 +38,7 @@ PARCELAS.insert(0, (12, "Todas"))
 
 
 class Formulario(FormularioBase):
-    nome_da_loja = CampoFormulario("usuario", u"Nome do Estabelecimento", requerido=True, tamanho_max=128, ordem=1, texto_ajuda=u"O nome do estabelecimento como foi cadastrado no Rede")
+    nome_da_loja = CampoFormulario("usuario", u"Nome do Estabelecimento", requerido=True, tamanho_max=13, ordem=1, texto_ajuda=u"O nome do estabelecimento. Máx de 13 caracteres")
     numero_estabelecimento = CampoFormulario("token", u"Número do Estabelecimento", requerido=True, tamanho_max=128, ordem=2)
     senha = CampoFormulario("senha", u"Senha", requerido=True, tamanho_max=128, ordem=3)
     usar_antifraude = CampoFormulario("usar_antifraude", u"Usar o serviço de Anti Fraude", tipo=TipoDeCampo.boleano, requerido=False, ordem=4)
