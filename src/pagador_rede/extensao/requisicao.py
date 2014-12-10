@@ -6,7 +6,7 @@ from pagador.envio.requisicao import Enviar
 from pagador.envio.serializacao import ValorComAtributos
 from pagador_rede.extensao.envio import (Request, Authentication, AcquirerCode, Transaction, CardTxn, Card, Cv2Avs, TxnDetails, Instalments,
                                          HistoricTxn, Risk, Action, MerchantConfiguration, CallbackConfiguration, CustomerDetails, RiskDetails, PersonalDetails, AddressDetails,
-                                         PaymentDetails, OrderDetails, BillingDetails, LineItems, Item)
+                                         PaymentDetails, OrderDetails, BillingDetails, LineItems, Item, ShippingDetails)
 
 
 class PassosDeEnvio(object):
@@ -247,8 +247,9 @@ class EnviarPedido(Enviar):
     def order_details(self):
         return OrderDetails(
             discount_value=self.formatador.formata_decimal(self.valor_desconto, em_centavos=True),
-            time_zone=self.fuso_horario,
-            proposition_date=self.formatador.formata_data(self.pedido.provavel_data_envio),
+            #FIXME: entrar em contato com o e-rede pra saber o formato correto para esse campo
+            # time_zone=self.fuso_horario,
+            proposition_date=self.formatador.formata_data(self.pedido.provavel_data_envio, hora=False),
             billing_details=self.billing_details,
             line_items=LineItems(
                 item=self.items
@@ -267,12 +268,27 @@ class EnviarPedido(Enviar):
         )
 
     @property
+    def shipping_details(self):
+        return ShippingDetails(
+            first_name=self.formatador.trata_unicode_com_limite(self.nome_para_entrega.split(" ")[0], limite=50),
+            surname=self.formatador.trata_unicode_com_limite(self.nome_para_entrega.split(" ")[1], limite=50),
+            address_line1=self.endereco(TipoEndereco.entrega),
+            address_line2=self.formatador.trata_unicode_com_limite(self.pedido.endereco_entrega.complemento, limite=60),
+            city=self.formatador.trata_unicode_com_limite(self.pedido.endereco_entrega.cidade, limite=25),
+            state_province=self.formatador.trata_unicode_com_limite(self.pedido.endereco_entrega.estado, limite=25),
+            country="BR",
+            zip_code=self.pedido.endereco_entrega.cep,
+            delivery_date=self.formatador.formata_data(self.pedido.provavel_data_entrega, hora=False),
+            delivery_method=self.pedido.pedido_envio.envio.nome,
+        )
+
+    @property
     def personal_details(self):
         return PersonalDetails(
             first_name=self.formatador.trata_unicode_com_limite(self.nome_do_cliente.split(" ")[0], limite=32),
             surname=self.formatador.trata_unicode_com_limite(self.nome_do_cliente.split(" ")[1], limite=32),
             telephone="{}{}".format(*self.telefone_do_cliente),
-            date_of_birth=self.formatador.formata_data(self.pedido.cliente.data_nascimento),
+            date_of_birth=self.formatador.formata_data(self.pedido.cliente.data_nascimento, hora=False),
             id_number=self.documento_de_cliente,
         )
 
@@ -280,7 +296,7 @@ class EnviarPedido(Enviar):
     def risk_details(self):
         return RiskDetails(
             account_number=self.pedido.cliente_id,
-            email_address=self.pedido.cliente.email,
+            email_address=self.formatador.trata_email_com_mais(self.pedido.cliente.email),
             session_id=self.dados["session_id"],
             ip_address=self.dados["ip_address"]
         )
@@ -295,16 +311,7 @@ class EnviarPedido(Enviar):
     @property
     def customer_details(self):
         return CustomerDetails(
-            first_name=self.formatador.trata_unicode_com_limite(self.nome_para_entrega.split(" ")[0], limite=50),
-            surname=self.formatador.trata_unicode_com_limite(self.nome_para_entrega.split(" ")[1], limite=50),
-            address_line1=self.endereco(TipoEndereco.entrega),
-            address_line2=self.formatador.trata_unicode_com_limite(self.pedido.endereco_entrega.complemento, limite=60),
-            city=self.formatador.trata_unicode_com_limite(self.pedido.endereco_entrega.cidade, limite=25),
-            state_province=self.formatador.trata_unicode_com_limite(self.pedido.endereco_entrega.estado, limite=25),
-            country="BR",
-            zip_code=self.pedido.endereco_entrega.cep,
-            delivery_date=self.formatador.formata_data(self.pedido.provavel_data_entrega),
-            delivery_method=self.pedido.pedido_envio.envio.nome,
+            shipping_details=self.shipping_details,
             risk_details=self.risk_details,
             personal_details=self.personal_details,
             address_details=self.address_details,

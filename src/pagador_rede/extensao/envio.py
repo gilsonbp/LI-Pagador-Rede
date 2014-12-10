@@ -67,8 +67,11 @@ class CallbackConfiguration(EntidadeSerializavel):
 
 
 class CustomerDetails(EntidadeSerializavel):
+    _atributos_serializaveis = ["ShippingDetails", "RiskDetails", "PersonalDetails", "AddressDetails", "PaymentDetails", "OrderDetails"]
+
+
+class ShippingDetails(EntidadeSerializavel):
     _atributos = ["title", "first_name", "surname", "address_line1", "address_line2", "city", "state_province", "country", "zip_code", "delivery_date", "delivery_method"]
-    _atributos_serializaveis = ["RiskDetails", "PersonalDetails", "AddressDetails", "PaymentDetails", "OrderDetails"]
 
 
 class RiskDetails(EntidadeSerializavel):
