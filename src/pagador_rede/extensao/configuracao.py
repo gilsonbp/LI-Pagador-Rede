@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-import os
+
+from decimal import Decimal
 
 from pagador.configuracao.cadastro import CampoFormulario, FormularioBase, TipoDeCampo, CadastroBase, SelecaoBase, caminho_para_template
 from pagador.configuracao.cliente import Script, TipoScript
@@ -43,10 +44,11 @@ class Formulario(FormularioBase):
     senha = CampoFormulario("senha", u"Senha", requerido=True, tamanho_max=128, ordem=3)
     usar_antifraude = CampoFormulario("usar_antifraude", u"Usar o serviço de Anti Fraude", tipo=TipoDeCampo.boleano, requerido=False, ordem=4)
     juros_valor = CampoFormulario("juros_valor", u"Taxa de Juros", requerido=False, decimais=6, ordem=5, tipo=TipoDeCampo.decimal, texto_ajuda=u"Informe a taxa de juros para sua loja no Rede")
-    mostrar_parcelamento = CampoFormulario("mostrar_parcelamento", "Marque para mostrar o parcelamento na listagem dos produtos e na página do produto.", tipo=TipoDeCampo.boleano, requerido=False, ordem=6)
-    maximo_parcelas = CampoFormulario("maximo_parcelas", "Máximo de parcelas", tipo=TipoDeCampo.escolha, requerido=False, ordem=7, texto_ajuda=u"Quantidade máxima de parcelas para esta forma de pagamento.", opcoes=PARCELAS)
-    parcelas_sem_juros = CampoFormulario("parcelas_sem_juros", "Parcelas sem juros", tipo=TipoDeCampo.escolha, requerido=False, ordem=8, texto_ajuda=u"Número de parcelas sem juros para esta forma de pagamento.", opcoes=PARCELAS)
-    valor_minimo_parcela = CampoFormulario("valor_minimo_parcela", u"Valor mínimo da parcela", requerido=False, decimais=2, ordem=9, tipo=TipoDeCampo.decimal)
+    valor_minimo_aceitado = CampoFormulario("valor_minimo_aceitado", u"Valor mínimo", requerido=False, decimais=2, ordem=6, tipo=TipoDeCampo.decimal, texto_ajuda=u"Informe o valor mínimo para qual o Rede poderá ser usado.")
+    mostrar_parcelamento = CampoFormulario("mostrar_parcelamento", "Marque para mostrar o parcelamento na listagem dos produtos e na página do produto.", tipo=TipoDeCampo.boleano, requerido=False, ordem=7)
+    maximo_parcelas = CampoFormulario("maximo_parcelas", "Máximo de parcelas", tipo=TipoDeCampo.escolha, requerido=False, ordem=8, texto_ajuda=u"Quantidade máxima de parcelas para esta forma de pagamento.", opcoes=PARCELAS)
+    parcelas_sem_juros = CampoFormulario("parcelas_sem_juros", "Parcelas sem juros", tipo=TipoDeCampo.escolha, requerido=False, ordem=9, texto_ajuda=u"Número de parcelas sem juros para esta forma de pagamento.", opcoes=PARCELAS)
+    valor_minimo_parcela = CampoFormulario("valor_minimo_parcela", u"Valor mínimo da parcela", requerido=False, decimais=2, ordem=10, tipo=TipoDeCampo.decimal)
 
 
 class MeioPagamentoEnvio(object):
@@ -75,6 +77,13 @@ class MeioPagamentoSelecao(SelecaoBase):
     script_cartao = Script(tipo=TipoScript.javascript, nome="cartao", caminho_arquivo=caminho_do_arquivo_de_template("script_cartao.js"))
 
     def to_dict(self):
+        try:
+            valor_pagamento = Decimal(self.dados.get("valor_pagamento", None))
+        except ValueError:
+            valor_pagamento = None
+        if self.configuracao.valor_minimo_aceitado and valor_pagamento:
+            if valor_pagamento < self.configuracao.valor_minimo_aceitado:
+                return []
         return [
             self.script_cartao.to_dict(),
             self.selecao.to_dict(),
