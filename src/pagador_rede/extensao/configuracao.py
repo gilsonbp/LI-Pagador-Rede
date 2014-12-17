@@ -79,7 +79,7 @@ class MeioPagamentoSelecao(SelecaoBase):
     def to_dict(self):
         try:
             valor_pagamento = Decimal(self.dados.get("valor_pagamento", None))
-        except ValueError:
+        except (ValueError, TypeError):
             valor_pagamento = None
         if self.configuracao.valor_minimo_aceitado and valor_pagamento:
             if valor_pagamento < self.configuracao.valor_minimo_aceitado:
