@@ -33,7 +33,7 @@
                       <div class="controls">
                         <label class="control-label" for="cartao_numero">Número do Cartão</label>
                         <input type="text" id="cartao_numero" name="cartao_numero" class="span12" placeholder="•••• •••• •••• ••••" />
-                        <span class="help-block">Este campo é obrigatório</span>
+                        <span class="help-block erro">Este campo é obrigatório</span>
                       </div>
                     </div>
                   </div>
@@ -42,7 +42,7 @@
                       <div class="controls">
                         <label class="control-label" for="cartao_data_expiracao">Data de Expiração</label>
                         <input type="text" id="cartao_data_expiracao" name="cartao_data_expiracao" placeholder="mm/aa" class="span12" />
-                        <span class="help-block">Este campo é obrigatório</span>
+                        <span class="help-block erro">Este campo é obrigatório</span>
                       </div>
                     </div>
                   </div>
@@ -51,7 +51,8 @@
                     <div class="controls">
                         <label class="control-label" for="cartao_nome">Nome do Titular</label>
                         <input type="text" id="cartao_nome" name="cartao_nome" class="span12" placeholder="" />
-                        <span class="help-block">Este campo é obrigatório</span>
+                        <span class="help-block">Como escrito no cartão</span>
+                        <span class="help-block erro">Este campo é obrigatório</span>
                     </div>
                 </div>
                 <div>
@@ -63,7 +64,7 @@
                           <input type="text" id="cartao_cvv" name="cartao_cvv" placeholder="CCV" class="span7" />
                           <span class="add-on" data-toggle="tooltip" data-placement="right" title="Últimos 3 digitos no verso do cartão"><i class="icon-question-sign"></i></span>
                         </div>
-                        <span class="help-block">Este campo é obrigatório</span>
+                        <span class="help-block erro">Este campo é obrigatório</span>
                       </div>
                     </div>
                   </div>
@@ -74,7 +75,7 @@
                         <select name="cartao_parcelas" id="cartao_parcelas" class="span12"></select>
                         <input type="hidden" value="false" name="cartao_parcelas_sem_juros" id="cartao_parcelas_sem_juros" />
                         <input type="hidden" value="{{ carrinho_subtotal|formatar_decimal_br }}" name="cartao_valor_parcela" id="cartao_valor_parcela" />
-                        <span class="help-block">Este campo é obrigatório</span>
+                        <span class="help-block erro">Este campo é obrigatório</span>
                       </div>
                     </div>
                   </div>

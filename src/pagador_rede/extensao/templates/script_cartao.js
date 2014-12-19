@@ -37,7 +37,7 @@ $(function() {
     function zeraValidacao() {
         var $control = $(".control-group");
         $control.removeClass("error");
-        $control.find(".help-block").hide();
+        $control.find(".help-block.erro").hide();
     }
     function campoInvalido($campo, mensagem) {
         var $group = $campo.parents(".control-group");
@@ -45,8 +45,8 @@ $(function() {
         if (!mensagem) {
             mensagem = "este campo é obrigatório";
         }
-        $group.find(".help-block").text(mensagem);
-        $group.find(".help-block").show();
+        $group.find(".help-block.erro").text(mensagem);
+        $group.find(".help-block.erro").show();
     }
     zeraValidacao();
     $("#cartao_numero").mask("9999 9999 9999 9999");
