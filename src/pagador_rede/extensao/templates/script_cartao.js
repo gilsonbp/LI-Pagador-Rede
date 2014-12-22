@@ -1,3 +1,9 @@
+if(typeof String.prototype.trim !== 'function') {
+  String.prototype.trim = function() {
+    return this.replace(/^\s+|\s+$/g, ''); 
+  };
+}
+
 var camposObrigatorios = ["#cartao_nome", "#cartao_numero", "#cartao_data_expiracao", "#cartao_cvv"];
 $(function() {
     $("#formas-pagamento-wrapper").on("click", "#finalizarCompra", function(event) {
