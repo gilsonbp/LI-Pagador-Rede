@@ -81,6 +81,11 @@ class TipoDeParcelamento(object):
     sem_juros = "zero_interest"
 
 
+class Ambiente(object):
+    producao = 'P'
+    homologacao = 'H'
+
+
 class EnviarPedido(Enviar):
     def __init__(self, pedido, dados, configuracao_pagamento):
         super(EnviarPedido, self).__init__(pedido, dados, configuracao_pagamento)
@@ -109,7 +114,7 @@ class EnviarPedido(Enviar):
 
     @property
     def sandbox(self):
-        return settings.ENVIRONMENT in ["local", "development"]
+        return settings.ENVIRONMENT in ["local", "development"] or self.configuracao_pagamento.aplicacao == Ambiente.homologacao
 
     @property
     def pedido_pagamento(self):

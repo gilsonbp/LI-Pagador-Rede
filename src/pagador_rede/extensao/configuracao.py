@@ -44,16 +44,17 @@ PARCELAS.insert(0, (12, "Todas"))
 
 
 class Formulario(FormularioBase):
-    nome_da_loja = CampoFormulario("usuario", u"Nome do Estabelecimento", requerido=True, tamanho_max=13, ordem=1, texto_ajuda=u"O nome do estabelecimento junto à Rede. Máx de 13 caracteres")
-    numero_estabelecimento = CampoFormulario("token", u"Número do Estabelecimento", requerido=True, tamanho_max=128, ordem=2, texto_ajuda=u"Número de identificação junto à Rede, fornecido após adesão do serviço.")
-    senha = CampoFormulario("senha", u"Senha", requerido=True, tamanho_max=128, ordem=3, texto_ajuda=u"Senha fornecido pela Rede.")
-    usar_antifraude = CampoFormulario("usar_antifraude", u"Usar o serviço de Anti Fraude", tipo=TipoDeCampo.boleano, requerido=False, ordem=4, texto_ajuda=u"Consulte mais informações junto à <a href='https://www.userede.com.br/pt-BR/produtosservicos/Paginas/ecommerce-antifraude.aspx' target='_blank'>Rede</a>")
-    juros_valor = CampoFormulario("juros_valor", u"Taxa de Juros", requerido=False, decimais=2, ordem=5, tipo=TipoDeCampo.decimal, texto_ajuda=u"Informe a taxa de juros para sua loja na Rede")
-    valor_minimo_aceitado = CampoFormulario("valor_minimo_aceitado", u"Valor mínimo", requerido=False, decimais=2, ordem=6, tipo=TipoDeCampo.decimal, texto_ajuda=u"Informe o valor mínimo para exibir esta forma de pagamento.")
-    mostrar_parcelamento = CampoFormulario("mostrar_parcelamento", "Marque para mostrar o parcelamento na listagem e na página do produto.", tipo=TipoDeCampo.boleano, requerido=False, ordem=7)
-    maximo_parcelas = CampoFormulario("maximo_parcelas", "Máximo de parcelas", tipo=TipoDeCampo.escolha, requerido=False, ordem=8, texto_ajuda=u"Quantidade máxima de parcelas para esta forma de pagamento.", opcoes=PARCELAS)
-    parcelas_sem_juros = CampoFormulario("parcelas_sem_juros", "Parcelas sem juros", tipo=TipoDeCampo.escolha, requerido=False, ordem=9, texto_ajuda=u"Número de parcelas sem juros para esta forma de pagamento.", opcoes=PARCELAS)
-    valor_minimo_parcela = CampoFormulario("valor_minimo_parcela", u"Valor mínimo da parcela", requerido=False, decimais=2, ordem=10, tipo=TipoDeCampo.decimal)
+    ambiente = CampoFormulario("aplicacao", u"Ambiente", tipo=TipoDeCampo.escolha, requerido=True, opcoes=(('H', u'Homologação'), ('P', u'Produção')), ordem=1, texto_ajuda=u"Use Homologação para testar seu credenciamento junto à Rede. Use Produção quando a Rede autorizar seu credenciamento.")
+    nome_da_loja = CampoFormulario("usuario", u"Nome do Estabelecimento", requerido=True, tamanho_max=13, ordem=2, texto_ajuda=u"O nome do estabelecimento junto à Rede. Máx de 13 caracteres")
+    numero_estabelecimento = CampoFormulario("token", u"Número do Estabelecimento", requerido=True, tamanho_max=128, ordem=3, texto_ajuda=u"Número de identificação junto à Rede, fornecido após adesão do serviço.")
+    senha = CampoFormulario("senha", u"Senha", requerido=True, tamanho_max=128, ordem=4, texto_ajuda=u"Senha fornecido pela Rede.")
+    usar_antifraude = CampoFormulario("usar_antifraude", u"Usar o serviço de Anti Fraude", tipo=TipoDeCampo.boleano, requerido=False, ordem=5, texto_ajuda=u"Consulte mais informações junto à <a href='https://www.userede.com.br/pt-BR/produtosservicos/Paginas/ecommerce-antifraude.aspx' target='_blank'>Rede</a>")
+    juros_valor = CampoFormulario("juros_valor", u"Taxa de Juros", requerido=False, decimais=2, ordem=6, tipo=TipoDeCampo.decimal, texto_ajuda=u"Informe a taxa de juros para sua loja na Rede")
+    valor_minimo_aceitado = CampoFormulario("valor_minimo_aceitado", u"Valor mínimo", requerido=False, decimais=2, ordem=7, tipo=TipoDeCampo.decimal, texto_ajuda=u"Informe o valor mínimo para exibir esta forma de pagamento.")
+    mostrar_parcelamento = CampoFormulario("mostrar_parcelamento", "Marque para mostrar o parcelamento na listagem e na página do produto.", tipo=TipoDeCampo.boleano, requerido=False, ordem=8)
+    maximo_parcelas = CampoFormulario("maximo_parcelas", "Máximo de parcelas", tipo=TipoDeCampo.escolha, requerido=False, ordem=9, texto_ajuda=u"Quantidade máxima de parcelas para esta forma de pagamento.", opcoes=PARCELAS)
+    parcelas_sem_juros = CampoFormulario("parcelas_sem_juros", "Parcelas sem juros", tipo=TipoDeCampo.escolha, requerido=False, ordem=10, texto_ajuda=u"Número de parcelas sem juros para esta forma de pagamento.", opcoes=PARCELAS)
+    valor_minimo_parcela = CampoFormulario("valor_minimo_parcela", u"Valor mínimo da parcela", requerido=False, decimais=2, ordem=11, tipo=TipoDeCampo.decimal)
 
 
 class MeioPagamentoEnvio(object):
