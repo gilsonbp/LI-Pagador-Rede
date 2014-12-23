@@ -17,18 +17,77 @@ class PassosDeEnvio(object):
 
 
 class StatusDeRetorno(object):
+    sem_resposta = "-1"
     sucesso = "1"
-    revisao = "1127"
-    rejeitada = "1126"
     comunicacao_interrompida = "2"
     timeout = "3"
     erro_nos_dados = "5"
     erro_na_comunicacao = "6"
     nao_autorizado = "7"
+    fulfill_nao_executado = "19"
     tipo_de_cartao_invalido = "21"
     data_expiracao_invalida = "23"
     cartao_expirado = "24"
     numero_cartao_invalido = "25"
+    numero_cartao_incompleto = "26"
+    cartao_ainda_invalido = "29"
+    valor_invalido = "34"
+    referencia_em_uso = "51"
+    cartao_usado_recentemente = "56"
+    erro_de_configuracao = "61"
+    cv2_incompleto = "132"
+    estabelecimento_invalido_1 = "480"
+    estabelecimento_invalido_2 = "482"
+    tempo_limite_para_autorizacao = "1104"
+    revisao = "1127"
+    rejeitada = "1126"
+
+
+MENSAGENS_REJEICAO = {
+    "-1": None,
+    "00": None,
+    "51": u"Produto ou serviço não habilitado para o estabelecimento. Entre em contato com a Rede.",
+    "53": u"Transação não permitida para o emissor. Entre em contato com a Rede.",
+    "56": u"Erro nos dados informados. Tente novamente. Ao receber este erro na transação de confirmação da pré (fulfill), importante reenviar a transação diariamente durante 3 dias e caso persista o erro entrar em contato com nosso suporte técnico.",
+    "57": u"Estabelecimento inválido.",
+    "58": u"Transação não autorizada. Contate o emissor.",
+    "65": u"Senha inválida. Tente novamente.",
+    "69": u"Transação não permitida para este produto ou serviço.",
+    "72": u"Contate o emissor.",
+    "74": u"Falha na comunicação. Tente novamente.",
+    "79": u"Cartão expirado. Transação não pode ser resubmetida. Contate o emissor.",
+    "80": u"Transação não autorizada. Contate o emissor. (Saldo Insuficiente).",
+    "81": u"Produto ou serviço não habilitado para o emissor (AVS).",
+    "82": u"Transação não autorizada para cartão de débito.",
+    "83": u"Transação não autorizada. Problemas com cartão. Contate o emissor.",
+    "84": u"Transação não autorizada. Transação não pode ser resubmetida. Contate o emissor.",
+}
+
+
+MENSAGENS_RETORNO = {
+    StatusDeRetorno.sucesso: u"Seu pagamento foi aprovado com sucesso.",
+    StatusDeRetorno.sem_resposta: u"A Rede não está disponível no momento. Por favor, tente mais tarde. Se o erro persistir, contacte o SAC da loja.",
+    StatusDeRetorno.comunicacao_interrompida: u"Ocorreu um erro de comunicação com a Rede. Por favor, tente de novo.",
+    StatusDeRetorno.timeout: u"A Rede não respondeu ao chamado. Por favor, aguarde um momento e tente novamente.",
+    StatusDeRetorno.erro_nos_dados: u"Uma ou mais informações enviadas não são válidas. Por favor, revise os seus dados e tente novamente.",
+    StatusDeRetorno.erro_na_comunicacao: u"Ocorreu um erro de comunicação com a Rede. Por favor, tente de novo.",
+    StatusDeRetorno.nao_autorizado: u"A compra não foi autorizada pela Rede. Por favor, use outro meio de pagamento.",
+    StatusDeRetorno.fulfill_nao_executado: u"Houve uma tentativa de confirmação de uma transação que não pode ser confirmada ou que já foi confirmada.",
+    StatusDeRetorno.tipo_de_cartao_invalido: u"Tipo de cartão inválido.",
+    StatusDeRetorno.data_expiracao_invalida: u"A data de expiração é inválida.",
+    StatusDeRetorno.cartao_expirado: u"O cartão usado está expirado. Por favor, use outro cartão.",
+    StatusDeRetorno.numero_cartao_invalido: u"O número do cartão é inválido.",
+    StatusDeRetorno.numero_cartao_incompleto: u"O número do cartão está incompleto.",
+    StatusDeRetorno.cartao_ainda_invalido: u"Cartão ainda não é válido",
+    StatusDeRetorno.valor_invalido: u"Não foi enviado um valor de pagamento válido.",
+    StatusDeRetorno.referencia_em_uso: u"Já existe uma transação no sistema com este número de referência.",
+    StatusDeRetorno.cartao_usado_recentemente: u"Esse cartão foi usado recentemente. Por favor, aguarde um momento ou use um outro cartão.",
+    StatusDeRetorno.erro_de_configuracao: u"Um erro na configuração de conta causou a falha da transação. Entre em contato com o suporte do e-Rede.",
+    StatusDeRetorno.cv2_incompleto: u"O número CV2 deve ter 3 dígitos",
+    StatusDeRetorno.estabelecimento_invalido_1: u"O ID da loja na Rede é inválido. Por favor, contacte o SAC da loja e informe o problema.",
+    StatusDeRetorno.estabelecimento_invalido_2: u"O ID da loja na Rede é inválido. Por favor, contacte o SAC da loja e informe o problema.",
+    StatusDeRetorno.tempo_limite_para_autorizacao: u"O tempo para autorizar essa transação passou do limite estabelecido. Por favor, refaça o pedido e tente novamente.",
+}
 
 
 class ResultadoAntiFraude(object):
@@ -145,13 +204,29 @@ class EnviarPedido(Enviar):
             }
         return valores
 
+    @property
+    def status_de_retorno(self):
+        if "Response" in self.dados:
+            if "status" in self.dados["Response"]:
+                return self.dados["Response"]["status"]
+        return StatusDeRetorno.sem_resposta
+
+    @property
+    def status_de_rejeicao(self):
+        if "Response" in self.dados:
+            if "extended_status" in self.dados["Response"]:
+                return self.dados["Response"]["extended_status"]
+        return StatusDeRetorno.sem_resposta
+
     def processar_resposta(self, resposta):
         retorno = self.formatador.xml_para_dict(resposta.content)
         self.dados.update(retorno)
+        retorno["mensagem_retorno"] = MENSAGENS_RETORNO[self.status_de_retorno]
         if resposta.status_code != 200:
             return {"content": retorno, "status": resposta.status_code, "reenviar": False}
         sucesso = retorno["Response"]["status"] in [StatusDeRetorno.sucesso, StatusDeRetorno.revisao]
         retorno["sucesso"] = sucesso
+        retorno["mensagem_rejeicao"] = MENSAGENS_REJEICAO[self.status_de_rejeicao]
         if retorno["Response"]["status"] == StatusDeRetorno.revisao:
             retorno["Response"]["CardTxn"]["authcode"] = StatusDeRetorno.revisao
         return {"content": retorno, "status": (200 if sucesso else 500), "reenviar": False}
