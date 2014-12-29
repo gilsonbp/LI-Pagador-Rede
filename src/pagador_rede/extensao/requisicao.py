@@ -202,6 +202,15 @@ class EnviarPedido(Enviar):
                 "valor_parcela": float(self.dados["cartao_valor_parcela"]),
                 "sem_juros": self.dados["cartao_parcelas_sem_juros"] == "true"
             }
+        if self.passo_atual == PassosDeEnvio.pre:
+            if "conteudo_json" in valores:
+                valores["conteudo_json"].update({
+                    "bandeira": self.dados["Response"][txn_key]["card_scheme"]
+                })
+            else:
+                valores["conteudo_json"] = {
+                    "bandeira": self.dados["Response"][txn_key]["card_scheme"]
+                }
         return valores
 
     @property

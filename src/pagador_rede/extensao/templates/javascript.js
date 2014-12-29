@@ -4,13 +4,10 @@ var $counter = null;
 var segundos = 5;
 $(function() {
     var $redeMensagem = $(".rede-mensagem");
-
-    function iniciaContador() {
-        $counter = $redeMensagem.find(".segundos");
-        setInterval('if (segundos > 0) { $counter.text(--segundos); }', 1000);
-    }
+    var bandeira = '{{ pedido.pedido_venda_pagamento.conteudo_json.bandeira }}';
 
     function enviaPagamento() {
+        atualizaImagemBandeira();
         $redeMensagem.find(".msg-danger").hide();
         $redeMensagem.find(".msg-success").hide();
         $redeMensagem.find(".msg-warning").show();
@@ -23,7 +20,6 @@ $(function() {
                 exibeMensagemErro(data.status, data.content);
             })
             .done(function (data) {
-                console.log(data);
                 if (data.sucesso) {
                     window.location = window.location;
                 }
@@ -58,7 +54,20 @@ $(function() {
         window.location = url;
     });
 
+    function atualizaImagemBandeira() {
+        var $cartaoBandeira = $(".cartao-bandeira");
+        if (bandeira) {
+            var urlImagem = '{{ STATIC_URL }}img/formas-de-pagamento/cartao-{}-logo.png'.replace("{}", bandeira);
+            var titleEAlt = 'Cartão {}'.replace("{}", bandeira);
+            $cartaoBandeira.attr("src", urlImagem);
+            $cartaoBandeira.attr("title", titleEAlt);
+            $cartaoBandeira.attr("alt", titleEAlt);
+        }
+        $cartaoBandeira.show();
+    }
+
     function exibeMensagemErro(status, mensagem, fatal) {
+        atualizaImagemBandeira();
         $redeMensagem.find(".msg-warning").hide();
         $redeMensagem.toggleClass("alert-message-warning alert-message-danger");
         var $errorMessage = $("#errorMessage");
@@ -71,6 +80,7 @@ $(function() {
     }
 
     function exibeMensagemSucesso(situacao) {
+        atualizaImagemBandeira();
         $redeMensagem.find(".msg-warning").hide();
         $redeMensagem.toggleClass("alert-message-warning alert-message-success");
         var $success = $redeMensagem.find(".msg-success");
