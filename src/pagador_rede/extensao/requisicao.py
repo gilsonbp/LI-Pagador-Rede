@@ -205,11 +205,13 @@ class EnviarPedido(Enviar):
         if self.passo_atual == PassosDeEnvio.pre:
             if "conteudo_json" in valores:
                 valores["conteudo_json"].update({
-                    "bandeira": self.dados["Response"][txn_key]["card_scheme"]
+                    "bandeira": self.dados["Response"][txn_key]["card_scheme"],
+                    "aplicacao": self.dados["aplicacao"]
                 })
             else:
                 valores["conteudo_json"] = {
-                    "bandeira": self.dados["Response"][txn_key]["card_scheme"]
+                    "bandeira": self.dados["Response"][txn_key]["card_scheme"],
+                    "aplicacao": self.dados["aplicacao"]
                 }
         return valores
 

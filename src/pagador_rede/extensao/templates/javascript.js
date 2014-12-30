@@ -36,11 +36,13 @@ $(function() {
                     }
                     else {
                         if ('{{ settings.DEBUG }}' == 'True') {
-                            exibeMensagemErro(data.status, data.content);
+                            console.log(data);
                         }
-                        else {
-                            exibeMensagemErro(data.status, "Ocorreu um erro ao enviar sua solicitação. Se o erro persistir, contate nosso SAC.");
+                        var mensagem = "Ocorreu um erro ao enviar sua solicitação. Se o erro persistir, contate nosso SAC.";
+                        if (data.content.hasOwnProperty("mensagem_retorno")) {
+                            mensagem = data.content.mensagem_retorno;
                         }
+                        exibeMensagemErro(data.status, mensagem);
                     }
                 }
             });

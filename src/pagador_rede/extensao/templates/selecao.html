@@ -15,17 +15,25 @@
                 <input type="radio" name="forma_pagamento" id="{% if modo == 'modal' %}modal-{% endif %}radio-rede" {% if forma_pagamento == pagamento.id|stringformat:"s" %}checked="checked"{% endif %} value="11">
             </span>
             <span class="forma-conteiner text-right">
-              <!--<img src="{{ STATIC_URL }}novo-template/img/bandeiras/rede.png" title="Pague com Cartão de Crédido" alt="Pague com Cartão de Crédido" />-->
-              <ul class="bandeiras-pagamento">
-                <li><i class="icone-pagamento visa" title="Visa"></i></li>
-                <li><i class="icone-pagamento mastercard" title="Mastercard"></i></li>
-              </ul>
+                <ul class="bandeiras-pagamento">
+                    <li><i class="icone-pagamento visa" title="Visa"></i></li>
+                    <li><i class="icone-pagamento mastercard" title="Mastercard"></i></li>
+                    {% if pagamento.aplicacao == "H" %}
+                    <li style="color: red; line-height: 21px">(em homologação)</li>
+                    {% endif %}
+                </ul>
             </span>
         </label>
         <div id="{% if modo == 'modal' %}modal-{% endif %}escolha-rede" class="collapse">
+            <input type="hidden" value="{{ pagamento.aplicacao }}" name="aplicacao" />
             <input type="hidden" value="{% get_client_ip %}" name="ip_address" />
             <input type="hidden" value="{{ request.session.session_key }}" name="session_id" />
             <div class="accordion-inner">
+                {% if pagamento.aplicacao == "H" %}
+                <div style="color: red;">
+                    Esta forma de pagamento está em homologação e os valores não serão debitados do cartão de crédito.
+                </div>
+                {% endif %}
                 <div class="placeholder-card"></div>
                 <div>
                   <div class="span7">
