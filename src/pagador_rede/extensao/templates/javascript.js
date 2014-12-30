@@ -55,11 +55,13 @@ $(function() {
     });
 
     function atualizaImagemBandeira() {
-        var $cartaoBandeira = $(".cartao-bandeira");
+        var $cartaoBandeira = $(".caixa-info img").first();
         if (bandeira) {
-            var urlImagem = '{{ STATIC_URL }}img/formas-de-pagamento/cartao-{}-logo.png'.replace("{}", bandeira);
+            if (bandeira === "VISA" || bandeira === "Mastercard") {
+                var urlImagem = '{{ STATIC_URL }}img/formas-de-pagamento/cartao-{}-logo.png'.replace("{}", bandeira);
+                $cartaoBandeira.attr("src", urlImagem);
+            }
             var titleEAlt = 'Cartão {}'.replace("{}", bandeira);
-            $cartaoBandeira.attr("src", urlImagem);
             $cartaoBandeira.attr("title", titleEAlt);
             $cartaoBandeira.attr("alt", titleEAlt);
         }

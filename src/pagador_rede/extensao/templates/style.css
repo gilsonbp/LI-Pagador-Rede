@@ -8,6 +8,7 @@
 .alert-message h3 {padding-top: 0;margin-bottom: 5px;}
 .alert-message p:last-child {margin-bottom: 0;}
 .alert-message code {background-color: #fff;border-radius: 3px;}
+.alert-message .alert-img { display: none; }
 .alert-message-success {background-color: #F4FDF0;border-color: #3C763D;}
 .alert-message-success h3 {color: #3C763D;}
 .alert-message-danger {background-color: #fdf7f7;border-color: #d9534f;}
