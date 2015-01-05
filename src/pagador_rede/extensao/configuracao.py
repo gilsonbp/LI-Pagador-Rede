@@ -83,13 +83,8 @@ class MeioPagamentoSelecao(SelecaoBase):
     script_cartao = Script(tipo=TipoScript.javascript, nome="cartao", caminho_arquivo=caminho_do_arquivo_de_template("script_cartao.js"))
 
     def to_dict(self):
-        try:
-            valor_pagamento = Decimal(self.dados.get("valor_pagamento", None))
-        except (ValueError, TypeError):
-            valor_pagamento = None
-        if self.configuracao.valor_minimo_aceitado and valor_pagamento:
-            if valor_pagamento < self.configuracao.valor_minimo_aceitado:
-                return []
+        if not self.aceita_pagamento_no_valor():
+            return []
         return [
             self.script_cartao.to_dict(),
             self.selecao.to_dict(),
