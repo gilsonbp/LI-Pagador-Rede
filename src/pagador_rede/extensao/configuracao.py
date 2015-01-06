@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from decimal import Decimal
-
 from pagador.configuracao.cadastro import CampoFormulario, FormularioBase, TipoDeCampo, CadastroBase, SelecaoBase, caminho_para_template
 from pagador.configuracao.cliente import Script, TipoScript
 
@@ -22,14 +20,7 @@ class MeioPagamentoCadastro(CadastroBase):
 
     @property
     def descricao(self):
-        script = Script(tipo=TipoScript.html, nome="descricao", eh_template=True)
-        script.adiciona_linha(u'<p>O e-rede é a solução adequada para o lojista que já possui fluxo de vendas em sua loja e deseja oferecer uma forma de pagamento direta com as principais operadoras de cartões de crédito (VISA, Mastercard, Hipercard e Diners).</p>')
-        script.adiciona_linha(u'<p>O pagamento ocorre através de checkout transparente, ou seja, o comprador se mantém na loja o tempo todo até a conclusão do pedido, transmitindo mais segurança ao processo.</p>')
-        script.adiciona_linha(u'<p>A rede permite taxas especiais, além do serviço de anti-fraude, parcelamento com/sem juros e recebimento antecipado. Consulte as condições junto à rede.</p>')
-        script.adiciona_linha(u'<p><strong>Como usar e-rede em minha loja?</strong></p>')
-        script.adiciona_linha(u'<p>É necessário credenciar sua empresa junto a operadora antes de inserir suas configurações nessa página. Para isto, acesse a página de <a href="https://services.redecard.com.br/Novoportal/portals/servico/autocredenciamento.aspx" title="Criar credenciamento no Rede" target="_blank">credeciamento</a> e siga os passos.</p>')
-        script.adiciona_linha(u'<p>Sua loja também deve possuir <a href="{% url "painel_configuracao_dominio" %}">domínio próprio</a> e <a href="{% url "plataforma_certificado" %}">certificado SSL</a>.</p>')
-        return script
+        return Script(tipo=TipoScript.html, nome="descricao", eh_template=True, caminho_arquivo=caminho_do_arquivo_de_template("painel_descricao.html"))
 
     def to_dict(self):
         return {
