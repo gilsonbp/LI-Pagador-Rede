@@ -4,10 +4,8 @@ var $counter = null;
 var segundos = 5;
 $(function() {
     var $redeMensagem = $(".rede-mensagem");
-    var bandeira = '{{ pedido.pedido_venda_pagamento.conteudo_json.bandeira }}';
 
     function enviaPagamento() {
-        atualizaImagemBandeira();
         $redeMensagem.find(".msg-danger").hide();
         $redeMensagem.find(".msg-success").hide();
         $redeMensagem.find(".msg-warning").show();
@@ -56,22 +54,7 @@ $(function() {
         window.location = url;
     });
 
-    function atualizaImagemBandeira() {
-        var $cartaoBandeira = $(".caixa-info img").first();
-        if (bandeira) {
-            if (bandeira === "VISA" || bandeira === "Mastercard") {
-                var urlImagem = '{{ STATIC_URL }}img/formas-de-pagamento/cartao-{}-logo.png'.replace("{}", bandeira);
-                $cartaoBandeira.attr("src", urlImagem);
-            }
-            var titleEAlt = 'Cartão {}'.replace("{}", bandeira);
-            $cartaoBandeira.attr("title", titleEAlt);
-            $cartaoBandeira.attr("alt", titleEAlt);
-        }
-        $cartaoBandeira.show();
-    }
-
     function exibeMensagemErro(status, mensagem, fatal) {
-        atualizaImagemBandeira();
         $redeMensagem.find(".msg-warning").hide();
         $redeMensagem.toggleClass("alert-message-warning alert-message-danger");
         var $errorMessage = $("#errorMessage");
@@ -84,7 +67,6 @@ $(function() {
     }
 
     function exibeMensagemSucesso(situacao) {
-        atualizaImagemBandeira();
         $redeMensagem.find(".msg-warning").hide();
         $redeMensagem.toggleClass("alert-message-warning alert-message-success");
         var $success = $redeMensagem.find(".msg-success");

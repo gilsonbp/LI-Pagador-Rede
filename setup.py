@@ -33,7 +33,7 @@ def read(fname):
 
 setup(
     name='li-pagador-rede',
-    version='0.0.14',
+    version='0.0.15',
     url='https://github.com/lojaintegrada/LI-Pagador-Rede',
     license='MIT',
     description='Meio de pagamento usando o e-Rede (https://www.userede.com.br/)',
